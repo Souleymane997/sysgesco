@@ -1,13 +1,11 @@
 // ignore_for_file: constant_identifier_names
 
-
-
 class Config {
   static const String appName = "SYSGESCO";
 
   static const apiKey = "RDT563S45E4DF5G6YKOP451"; // ";
 
-    static const String apiURL = "http://192.168.43.139/Api/" ;
+  static const String apiURL = "http://192.168.43.139/Api/";
 
   //* eleves
 
@@ -54,5 +52,28 @@ class Config {
   static const String GetNoteID = "/Note/getNoteID";
 
   //*
+
+  //* enseignant
+
+  static const String GetAllEns = "/Enseignant/getAllEns";
+  static const String InsertEns = "/Enseignant/insertEns";
+
+  //*
+
+  //* seance
+
+  static const String GetSeanceByClasse = "/Seance/getSeanceByClasse";
+  static const String GetSeanceByProf = "/Seance/getSeanceByProf";
+  static const String InsertSeance = "/Seance/insertSeance";
+
+  //*
+
+  //* jour
+
+  static const String GetJour = "/Jour/getJour";
+
+  //*
+
+  //
 
 }

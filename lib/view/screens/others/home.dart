@@ -15,6 +15,7 @@ import '../../../services/config.dart';
 import '../classe/classe.dart';
 import '../classe/nouveaueleve.dart';
 import '../emploi/emploi.dart';
+import '../enseignant/enseignant.dart';
 import '../messages/message.dart';
 import '../scolarite/scolarite.dart';
 import 'navDrawer.dart';
@@ -451,7 +452,7 @@ class _HomePageState extends State<HomePage> {
                 rowDashbord(
                     "assets/images/scol.png",
                     "   Enseignants   ",
-                    const ScolaritePage(),
+                    const EnseignantPages(),
                     "assets/images/school.png",
                     "   Scolarité   ",
                     const ScolaritePage()),

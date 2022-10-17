@@ -1,4 +1,4 @@
-// ignore_for_file: unnecessary_this
+
 
 class MatiereModel {
   String? idMatieres;
@@ -14,8 +14,8 @@ class MatiereModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['idMatieres'] = this.idMatieres;
-    data['libelleMatieres'] = this.libelleMatieres;
+    data['idMatieres'] = idMatieres;
+    data['libelleMatieres'] = libelleMatieres;
 
     return data;
   }

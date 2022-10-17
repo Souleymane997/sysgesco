@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sms_advanced/sms_advanced.dart';
+import 'package:sysgesco/view/screens/messages/sendNote.dart';
 import 'package:sysgesco/view/screens/messages/sendRetard.dart';
 
 import '../../../controllers/classe_controller.dart';
 import '../../../controllers/eleve_controller.dart';
 import '../../../controllers/matiere_controller.dart';
+import '../../../controllers/note_controller.dart';
 import '../../../controllers/trimestre_controller.dart';
 import '../../../functions/colors.dart';
 import '../../../functions/custom_text.dart';
@@ -17,6 +21,7 @@ import '../../../functions/slidepage.dart';
 import '../../../models/classe_model.dart';
 import '../../../models/eleve_model.dart';
 import '../../../models/matiere_model.dart';
+import '../../../models/note_model.dart';
 import '../../../models/trimestre_model.dart';
 import 'sendConvocation.dart';
 
@@ -31,32 +36,25 @@ class EnvoiPage extends StatefulWidget {
 class _EnvoiPageState extends State<EnvoiPage> {
   late Future<List<ElevesModel>> feedEleve;
   late Future<List<ElevesModel>> feedSearchEleve;
+  List<ClasseModel> feedClasse = [];
+  List<MatiereModel> feedMatiere = [];
+  List<TrimestreModel> feedTrimestre = [];
   List<ElevesModel> selectList = [];
-  bool loading = false;
+  List<ElevesModel> listEleves = [];
+  List<NoteModel> feed1 = [];
+
+  List<String> title = [
+    "Envoi de Note",
+    "Envoi d'Emploi du temps",
+    "Envoi de Convocation",
+    "Envoi des Retars & Absences"
+  ];
 
   SmsSender sender = SmsSender();
   String message = ''' bonjour ''';
 
-  List<ElevesModel> listEleves = [];
-
   // ignore: non_constant_identifier_names
-  List<String> Title = [
-    "Envoi de Note aux Eleves",
-    "Envoi d'Emploi du temps",
-    "Envoi de Convocation",
-    "Envoi des Retars & Absences"
-  ];
-
-  List<String> buttonTitle = [
-    "Envoi Groupé ",
-    "Envoi d'Emploi du temps",
-    "Envoi de Convocation",
-    "Envoi des Retars & Absences"
-  ];
-
-  List<ClasseModel> feedClasse = [];
-  List<MatiereModel> feedMatiere = [];
-  List<TrimestreModel> feedTrimestre = [];
+  //* ********************************************************
 
   final listClasse = ['-- choisir une classe --'];
   String value = '-- choisir une classe --';
@@ -76,19 +74,26 @@ class _EnvoiPageState extends State<EnvoiPage> {
   List<String> numeroNote = ["-- choisir numero --", "1", "2", "3", "4"];
   String numeroValue = "-- choisir numero --";
   int numNote = 0;
+  int countNoteTrimestre = 0;
+//* ********************************************************
 
   int classeID = 0;
   int anneeID = 0;
+  int noteID = 0;
   int matiereID = 0;
   int trimestreID = 0;
   late SharedPreferences? saveClasseID;
   late SharedPreferences? saveLastAnneeID;
   late SharedPreferences? saveMatiereID;
   late SharedPreferences? saveTrimestreID;
+  late SharedPreferences? saveNoteID;
+
+//* ********************************************************
 
   bool showSearch = false;
   bool boarding = true;
   String changed = '';
+  bool loading = false;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   TextEditingController editingController = TextEditingController();
 
@@ -104,81 +109,22 @@ class _EnvoiPageState extends State<EnvoiPage> {
   String date1 = "";
   String heure1 = "";
 
-  loadClasse() async {
-    List<ClasseModel> result = await Classe().listClasse();
-    setState(() {
-      feedClasse = result;
-    });
-
-    for (var i = 0; i < feedClasse.length; i++) {
-      setState(() {
-        listClasse.add(feedClasse[i].libelleClasse.toString());
-      });
-    }
-
-    List<MatiereModel> res = await Matiere().listMatiere();
-    setState(() {
-      feedMatiere = res;
-    });
-
-    for (var i = 0; i < feedMatiere.length; i++) {
-      setState(() {
-        listMatiere.add(feedMatiere[i].libelleMatieres.toString());
-      });
-    }
-
-    List<TrimestreModel> results = await Trimestre().listTrimestre();
-    setState(() {
-      feedTrimestre = results;
-    });
-
-    for (var i = 0; i < feedTrimestre.length; i++) {
-      setState(() {
-        listTrimestre.add(feedTrimestre[i].libelleTrimestre.toString());
-      });
-    }
-  }
-
-  void checkID() async {
-    loadClasse();
-    saveClasseID = await SharedPreferences.getInstance();
-    saveLastAnneeID = await SharedPreferences.getInstance();
-    saveMatiereID = await SharedPreferences.getInstance();
-    saveTrimestreID = await SharedPreferences.getInstance();
-
-    matiereID = (saveMatiereID!.getInt('matiereID') ?? 0);
-    trimestreID = (saveMatiereID!.getInt('trimestreID') ?? 0);
-    anneeID = (saveLastAnneeID!.getInt('lastAnneeID') ?? 0);
-    classeID = (saveClasseID!.getInt('classeID') ?? 0);
-  }
-
-  loadEleve() async {
-    Future<List<ElevesModel>> result =
-        Eleve().listEleve(id1: classeID, id2: anneeID);
-
-    listEleves = await result;
-    setState(() {
-      feedEleve = result;
-      feedSearchEleve = result;
-    });
-  }
+//* Fin des Variables  //* Fin des Variables  //* Fin des Variables
+//* Fin des Variables  //* Fin des Variables  //* Fin des Variables
+//* Fin des Variables  //* Fin des Variables  //* Fin des Variables
+//* Fin des Variables  //* Fin des Variables  //* Fin des Variables
 
   @override
   void initState() {
+    initializeDateFormatting();
     date1 = formatDate(date);
     heure1 = " ${selectedTime.hour} h ${selectedTime.minute} ";
     checkID();
-    Timer(const Duration(milliseconds: 500), () {
+    Timer(const Duration(milliseconds: 1500), () {
       callsearchDialogue();
     });
 
     super.initState();
-  }
-
-  callsearchDialogue() {
-    Timer(const Duration(milliseconds: 100), () {
-      searchClasse(widget.x);
-    });
   }
 
   @override
@@ -186,8 +132,16 @@ class _EnvoiPageState extends State<EnvoiPage> {
     return Scaffold(
       appBar: (selectList.isEmpty)
           ? AppBar(
-              title: Text(Title[widget.x]),
+              title: Text(title[widget.x]),
               actions: [
+                IconButton(
+                    onPressed: () {
+                      searchClasse(widget.x);
+                    },
+                    icon: const Icon(Icons.filter_center_focus)),
+                Container(
+                  width: 20,
+                ),
                 InkWell(
                   onTap: () {
                     debugPrint("show zone search");
@@ -344,36 +298,60 @@ class _EnvoiPageState extends State<EnvoiPage> {
               height: 25.0,
             ),
             Expanded(child: (loading) ? elemntInList() : pageLoading(context)),
-            Container(
-              height: 80.0,
-            ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          if (widget.x == 2) {
-            dialogueConvocation();
-            //envoiConvocation();
-          }
+      floatingActionButton: (widget.x != 3)
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                if (widget.x == 2) {
+                  dialogueConvocation();
+                  //envoiConvocation();
+                }
 
-          // Navigator.of(context).push(
-          //   SlideRightRoute(child:  const TopPage(), page: const TopPage(), direction: AxisDirection.left),
-          // );
-        },
-        elevation: 10.0,
-        backgroundColor: amberFone(),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        label: CustomText(
-          "Envoi Groupé",
-          fontWeight: FontWeight.w600,
-        ),
-        icon: const Icon(Icons.send),
-      ),
+                if (widget.x == 0) {
+                  dialogueNote();
+                  envoiNotes();
+                  Timer(const Duration(milliseconds: 2000), () {
+                    CoolAlert.show(
+                      context: context,
+                      type: CoolAlertType.success,
+                      text: "Message Envoyé avec Success",
+                      loopAnimation: true,
+                      confirmBtnText: 'OK',
+                      barrierDismissible: false,
+                      confirmBtnColor: tealClaire(),
+                      backgroundColor: teal(),
+                      onConfirmBtnTap: () {
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      },
+                    );
+                  });
+                }
+
+                // Navigator.of(context).push(
+                //   SlideRightRoute(child:  const TopPage(), page: const TopPage(), direction: AxisDirection.left),
+                // );
+              },
+              elevation: 10.0,
+              backgroundColor: amberFone(),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              label: CustomText(
+                "Envoi Groupé",
+                fontWeight: FontWeight.w600,
+              ),
+              icon: const Icon(Icons.send),
+            )
+          : Container(),
     );
   }
+
+//* List for Eleves and Widget Card
+//* List for Eleves and Widget Card
+//* List for Eleves and Widget Card
 
   Widget elemntInList() {
     return FutureBuilder<List<ElevesModel>>(
@@ -426,7 +404,7 @@ class _EnvoiPageState extends State<EnvoiPage> {
           title: Padding(
             padding: const EdgeInsets.all(8.0),
             child: CustomText(
-              "${element.nomEleve}  ${element.prenomEleve}",
+              "${element.nomEleve.toString().toUpperCase()}  ${element.prenomEleve.toString().toUpperCase()}",
               tex: TailleText(context).soustitre * 0.8,
               color: noir(),
               textAlign: TextAlign.left,
@@ -454,6 +432,9 @@ class _EnvoiPageState extends State<EnvoiPage> {
     );
   }
 
+//* Functions
+//* Functions
+//* Functions
 /* boite de Dialogue de Classe  */
   Future<void> searchClasse(int i) async {
     return await showDialog(
@@ -469,7 +450,7 @@ class _EnvoiPageState extends State<EnvoiPage> {
                     children: [
                       Expanded(
                         child: CustomText(
-                          Title[widget.x],
+                          title[widget.x],
                           color: Colors.teal,
                           fontWeight: FontWeight.bold,
                           tex: TailleText(context).titre,
@@ -644,7 +625,6 @@ class _EnvoiPageState extends State<EnvoiPage> {
                                     choixClasse = value;
                                     choixMatiere = mat;
                                     choixTrimestre = valueTri;
-                                    debugPrint("num note : $numNote");
                                   });
                                   Navigator.of(context).pop();
                                 }
@@ -685,31 +665,46 @@ class _EnvoiPageState extends State<EnvoiPage> {
       }
     }
 
-    for (var i = 0; i < feedMatiere.length; i++) {
-      if (mat == feedMatiere[i].libelleMatieres.toString()) {
-        setState(() {
-          idMat = int.parse(feedMatiere[i].idMatieres.toString());
-        });
-      }
-    }
-
-    for (var i = 0; i < feedTrimestre.length; i++) {
-      if (valueTri == feedTrimestre[i].libelleTrimestre.toString()) {
-        setState(() {
-          idTri = int.parse(feedTrimestre[i].idTrimestre.toString());
-        });
-      }
-    }
-
     saveClasseID!.setInt('classeID', int.parse(idValue.toString()));
-    saveMatiereID!.setInt('matiereID', int.parse(idMat.toString()));
-    saveTrimestreID!.setInt('trimestreID', int.parse(idTri.toString()));
 
-    Timer(const Duration(milliseconds: 200), () {
-      loadEleve();
+    if (widget.x == 0) {
+      for (var i = 0; i < feedMatiere.length; i++) {
+        if (mat == feedMatiere[i].libelleMatieres.toString()) {
+          setState(() {
+            idMat = int.parse(feedMatiere[i].idMatieres.toString());
+          });
+        }
+      }
+
+      for (var i = 0; i < feedTrimestre.length; i++) {
+        if (valueTri == feedTrimestre[i].libelleTrimestre.toString()) {
+          setState(() {
+            idTri = int.parse(feedTrimestre[i].idTrimestre.toString());
+          });
+        }
+      }
+
+      saveMatiereID!.setInt('matiereID', int.parse(idMat.toString()));
+      saveTrimestreID!.setInt('trimestreID', int.parse(idTri.toString()));
+      saveNoteID!.setInt('noteID', int.parse(numeroValue.toString()));
+    }
+
+    setState(() {
+      matiereID = (saveMatiereID!.getInt('matiereID') ?? 0);
+      trimestreID = (saveMatiereID!.getInt('trimestreID') ?? 0);
+      anneeID = (saveLastAnneeID!.getInt('lastAnneeID') ?? 0);
+      classeID = (saveClasseID!.getInt('classeID') ?? 0);
+
+      debugPrint(
+          " mat : $matiereID .. tri : $trimestreID .. ann : $anneeID ... classe : $classeID .... note : $numeroValue");
     });
 
-    Timer(const Duration(milliseconds: 500), () {
+    Timer(const Duration(milliseconds: 100), () {
+      loadEleve();
+      loadCountNote();
+    });
+
+    Timer(const Duration(milliseconds: 2000), () {
       setState(() {
         loading = true;
       });
@@ -723,12 +718,14 @@ class _EnvoiPageState extends State<EnvoiPage> {
           debugPrint("0");
           Navigator.of(context).push(
             SlideRightRoute(
-                child: SendRetard(
+                child: SendNotePage(
                   eleve: eleve,
+                  matiere: choixMatiere,
                   classe: choixClasse,
                 ),
-                page: SendRetard(
+                page: SendNotePage(
                   eleve: eleve,
+                  matiere: choixMatiere,
                   classe: choixClasse,
                 ),
                 direction: AxisDirection.left),
@@ -797,7 +794,7 @@ class _EnvoiPageState extends State<EnvoiPage> {
   envoiConvocation() {
     for (var i = 0; i < listEleves.length; i++) {
       message =
-          " Le Proviseur du lycée Privé Wend Yam convie les Parents de l'élève ${listEleves[i].nomEleve} ${listEleves[i].prenomEleve} a une importante rencontre le $date1 à $heure1 ";
+          " Le Proviseur du lycée Privé Wend Yam convie les Parents de l'élève ${listEleves[i].nomEleve.toString().toUpperCase()} ${listEleves[i].prenomEleve.toString().toUpperCase()} a une importante rencontre le ${date1.toString().toUpperCase()} à ${heure1.toString().toUpperCase()} ";
 
       sender.sendSms(SmsMessage(listEleves[i].phoneParent, message));
     }
@@ -818,6 +815,36 @@ class _EnvoiPageState extends State<EnvoiPage> {
         },
       );
     });
+  }
+
+  envoiNotes() async {
+    for (var i = 0; i < listEleves.length; i++) {
+      int id = int.parse(listEleves[i].idEleve.toString());
+
+      await loadNote(id);
+      //sender.sendSms(SmsMessage(listEleves[i].phoneParent, message));
+
+      String a = note();
+      String numero = number(noteID);
+
+      message = (a.length <= 2)
+          ? '''** Lycée Privé Wend Yam **\n\nL'élève ${listEleves[i].nomEleve.toString().toUpperCase()} ${listEleves[i].prenomEleve.toString().toUpperCase()} en classe de  ${choixClasse.toString().toUpperCase()} a eu  * $a * a la $numero  Note de ${choixMatiere.toString().toUpperCase()} au Trismetre $trimestreID '''
+          : '''** Lycée Privé Wend Yam **\n\nL'élève ${listEleves[i].nomEleve.toString().toUpperCase()} ${listEleves[i].prenomEleve.toString().toUpperCase()} en classe de  ${choixClasse.toString().toUpperCase()} n'a pas eu de $numero Note de ${choixMatiere.toString().toUpperCase()} au Trismetre $trimestreID ''';
+
+      debugPrint(message);
+    }
+  }
+
+  loadNote(int id) async {
+    feed1 = await Notes()
+        .listNoteEleve(id, trimestreID, matiereID, anneeID, classeID);
+    debugPrint("long : ${feed1.length}");
+  }
+
+  note() {
+    return (feed1.length >= noteID)
+        ? feed1[noteID - 1].notesEleve
+        : " pas de Note ";
   }
 
 /* boite de Dialogue de Classe  */
@@ -876,7 +903,10 @@ class _EnvoiPageState extends State<EnvoiPage> {
                             String year = convert(date.year.toString());
 
                             dateController.text = " $day / $month / $year ";
-                            date1 = dateController.text;
+                            //date1 = dateController.text;
+                            date1 = DateFormat.yMMMMEEEEd('fr')
+                                .format(date)
+                                .toString();
                           });
                         }
                       },
@@ -1018,4 +1048,125 @@ class _EnvoiPageState extends State<EnvoiPage> {
                   ],
                 )));
   }
+
+  callsearchDialogue() {
+    Timer(const Duration(milliseconds: 100), () {
+      searchClasse(widget.x);
+    });
+  }
+
+//* load Classe , eleves , id etc......
+//* load Classe , eleves , id etc......
+//* load Classe , eleves , id etc......
+//* load Classe , eleves , id etc......
+
+//* load Classe
+  loadClasse() async {
+    List<ClasseModel> result = await Classe().listClasse();
+    setState(() {
+      feedClasse = result;
+    });
+
+    for (var i = 0; i < feedClasse.length; i++) {
+      setState(() {
+        listClasse.add(feedClasse[i].libelleClasse.toString());
+      });
+    }
+
+    List<MatiereModel> res = await Matiere().listMatiere();
+    setState(() {
+      feedMatiere = res;
+    });
+
+    for (var i = 0; i < feedMatiere.length; i++) {
+      setState(() {
+        listMatiere.add(feedMatiere[i].libelleMatieres.toString());
+      });
+    }
+
+    List<TrimestreModel> results = await Trimestre().listTrimestre();
+    setState(() {
+      feedTrimestre = results;
+    });
+
+    for (var i = 0; i < feedTrimestre.length; i++) {
+      setState(() {
+        listTrimestre.add(feedTrimestre[i].libelleTrimestre.toString());
+      });
+    }
+  }
+
+//* load ID for All
+  void checkID() async {
+    loadClasse();
+    saveClasseID = await SharedPreferences.getInstance();
+    saveLastAnneeID = await SharedPreferences.getInstance();
+    saveMatiereID = await SharedPreferences.getInstance();
+    saveTrimestreID = await SharedPreferences.getInstance();
+    saveNoteID = await SharedPreferences.getInstance();
+
+    matiereID = (saveMatiereID!.getInt('matiereID') ?? 0);
+    noteID = (saveNoteID!.getInt('noteID') ?? 0);
+    trimestreID = (saveMatiereID!.getInt('trimestreID') ?? 0);
+    anneeID = (saveLastAnneeID!.getInt('lastAnneeID') ?? 0);
+    classeID = (saveClasseID!.getInt('classeID') ?? 0);
+  }
+
+//* load eleves for Classe
+
+  loadEleve() async {
+    Future<List<ElevesModel>> result =
+        Eleve().listEleve(id1: classeID, id2: anneeID);
+
+    listEleves = await result;
+    setState(() {
+      feedEleve = result;
+      feedSearchEleve = result;
+    });
+  }
+
+  loadCountNote() async {
+    String res1 = await Notes()
+        .countNoteOfTrismetre(trimestreID, matiereID, anneeID, classeID);
+
+    setState(() {
+      countNoteTrimestre = int.parse(res1);
+      debugPrint("nombre de Note $countNoteTrimestre");
+    });
+  }
+
+  Future<void> dialogueNote() async {
+    return await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogcontext) => StatefulBuilder(
+            builder: (stfContext, stfsetState) => SimpleDialog(
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                  contentPadding: const EdgeInsets.only(top: 2.0),
+                  backgroundColor: Colors.white,
+                  children: [
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Center(
+                      child: CircularProgressIndicator(
+                        color: teal(),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    CustomText(
+                      "Patientez svp ... envoi en cours ",
+                      color: teal(),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                  ],
+                )));
+  }
+
+  
 }

@@ -339,8 +339,32 @@ checkLien() async {
   return chaine;
 }
 
- convert(String chaine) {
-    return (chaine.length > 1) ? chaine.toString() : " 0$chaine";
+convert(String chaine) {
+    return (chaine.length > 1) ? chaine.toString() : "0$chaine";
+  }
+
+
+
+  String number(int i) {
+    switch (i) {
+      case 1:
+        return "première";
+
+      case 2:
+        return "deuxième";
+
+      case 3:
+        return "troisième";
+
+      case 4:
+        return "quatrième";
+
+      case 5:
+        return "cinquième";
+
+      default:
+        return "";
+    }
   }
 
 
