@@ -193,8 +193,7 @@ class _NewEnseignantPagesState extends State<NewEnseignantPages> {
                       child: Column(
                         children: [
                           Container(
-                            margin:
-                                const EdgeInsets.only(left: 15, right: 15),
+                            margin: const EdgeInsets.only(left: 15, right: 15),
                             width: MediaQuery.of(context).size.width * 0.75,
                             decoration: BoxDecoration(
                                 color: Colors.transparent,
@@ -307,7 +306,7 @@ class _NewEnseignantPagesState extends State<NewEnseignantPages> {
                           dateNaissance: date1,
                           phone: numeroController.text.toString());
 
-                      bool insert = await Enseignant().insertEleve(newEns);
+                      bool insert = await Enseignant().insertEns(newEns);
 
                       if (insert) {
                         CoolAlert.show(
@@ -349,8 +348,7 @@ class _NewEnseignantPagesState extends State<NewEnseignantPages> {
                     }
                   },
                   child: CustomText("enregistrer",
-                      color: Colors.white,
-                      tex: TailleText(context).soustitre)),
+                      color: Colors.white, tex: TailleText(context).soustitre)),
             ],
           ))),
     );
@@ -366,6 +364,4 @@ class _NewEnseignantPagesState extends State<NewEnseignantPages> {
       return false;
     }
   }
-
- 
 }

@@ -20,12 +20,18 @@ class Config {
   //* classe
 
   static const String GetAllClasse = "/Classe/getAllClasse";
+  static const String InsertClasse = "/Classe/insertClasse";
+  static const String EditClasse = "/Classe/editClasse";
+  static const String DeleteClasse = "/Classe/deleteClasse";
 
   //*
 
   //* matieres
 
   static const String GetMatiere = "/Matiere/getMatiere";
+  static const String InsertMatiere = "/Matiere/insertMatiere";
+  static const String EditMatiere = "/Matiere/editMatiere";
+  static const String DeleteMatiere = "/Matiere/deleteMatiere";
 
   //*
 
@@ -33,6 +39,9 @@ class Config {
 
   static const String GetAnnee = "/Annee/getAnnee";
   static const String GetlastAnnee = "/Annee/getLastAnnee";
+  static const String InsertAnnee = "/Annee/insertAnnee";
+  static const String EditAnnee = "/Annee/editAnnee";
+  static const String DeleteAnnee = "/Annee/deleteAnnee";
 
   //*
 

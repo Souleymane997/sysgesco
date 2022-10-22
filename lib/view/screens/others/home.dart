@@ -4,9 +4,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sysgesco/controllers/annee_controller.dart';
+import 'package:sysgesco/models/annee_model.dart';
 import '../../../controllers/classe_controller.dart';
 import '../../../functions/colors.dart';
 import '../../../functions/custom_text.dart';
+import '../../../functions/dialoguetoast.dart';
 import '../../../functions/fonctions.dart';
 import '../../../functions/slidepage.dart';
 import '../../../models/classe_model.dart';
@@ -30,6 +32,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late Future<List<ClasseModel>> feedClasse;
+  List<AnneeModel> feedAnnee = [];
   late Future<List<ClasseModel>> feedSearchClasse;
   late List<HttpModel> feedHtpp;
   bool exit = true;
@@ -46,13 +49,16 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   TextEditingController editingController = TextEditingController();
 
+  final listAnnee = ['-- choisir une annee --'];
+  String value = '-- choisir une annee --';
+  int idValue = 0;
+
   call() {
     loadClasse();
     Timer(const Duration(milliseconds: 2000), () {
       setState(() {
         loading = true;
       });
-      
     });
   }
 
@@ -171,6 +177,14 @@ class _HomePageState extends State<HomePage> {
             backgroundColor: Colors.teal,
             title: const Text("Accueil"),
             actions: [
+              IconButton(
+                  onPressed: () {
+                    searchAnnee(context);
+                  },
+                  icon: const Icon(Icons.filter_center_focus)),
+              Container(
+                width: 20,
+              ),
               InkWell(
                 onTap: () {
                   debugPrint("show zone search");
@@ -310,20 +324,19 @@ class _HomePageState extends State<HomePage> {
     saveLienHttp = await SharedPreferences.getInstance();
 
     String res = await Annee().lastAnneeID();
+
     int newInt = (saveLastAnneeID!.getInt('lastAnneeID') ?? 0);
     String chaine = (saveLienHttp!.getString('lienHttp') ?? "");
 
-    if (newInt == 0) {
-      saveLastAnneeID!.setInt('lastAnneeID', int.parse(res.toString()));
-      newInt = (saveLastAnneeID!.getInt('lastAnneeID') ?? 0);
-    }
-
+    saveLastAnneeID!.setInt('lastAnneeID', int.parse(res.toString()));
+    newInt = (saveLastAnneeID!.getInt('lastAnneeID') ?? 0);
 
     debugPrint("idlast : $newInt");
     debugPrint("lien Http : $chaine");
 
     Timer(const Duration(milliseconds: 500), () {
-      loadClasse() ;
+      loadClasse();
+      loadAnnee();
     });
   }
 
@@ -527,5 +540,133 @@ class _HomePageState extends State<HomePage> {
         containBord(chemin2, nom2, x2),
       ],
     );
+  }
+
+  /* boite de Dialogue de Classe  */
+  Future<void> searchAnnee(BuildContext parentContext) async {
+    return await showDialog(
+        context: parentContext,
+        barrierDismissible: false,
+        builder: (dialogcontext) => StatefulBuilder(
+            builder: (stfContext, stfsetState) => SimpleDialog(
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                  contentPadding: const EdgeInsets.only(top: 2.0),
+                  backgroundColor: Colors.white,
+                  title: Row(
+                    children: [
+                      Expanded(
+                        child: CustomText(
+                          "Choisir une Année Scolaire",
+                          color: Colors.teal,
+                          fontWeight: FontWeight.bold,
+                          tex: TailleText(context).titre,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      IconButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          icon: Icon(
+                            Icons.close,
+                            color: teal(),
+                          )),
+                    ],
+                  ),
+                  children: [
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    Container(
+                        margin: const EdgeInsets.only(left: 15, right: 15),
+                        padding: const EdgeInsets.only(left: 15),
+                        height: 50,
+                        width: MediaQuery.of(context).size.width * 0.4,
+                        decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(10)),
+                        child: DropdownButton<String>(
+                            underline: Container(),
+                            icon: const Icon(Icons.arrow_drop_down,
+                                color: Colors.blueGrey),
+                            value: value,
+                            isExpanded: true,
+                            items: listAnnee.map(buildMenuItem).toList(),
+                            iconSize: 30,
+                            iconEnabledColor: Colors.blueGrey,
+                            onChanged: ((value) {
+                              stfsetState(() {
+                                this.value = value!;
+                              });
+                              setState(() {
+                                this.value = value!;
+                              });
+                            }))),
+                    const SizedBox(
+                      height: 25,
+                    ),
+                    Center(
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 10),
+                        child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.teal,
+                              padding:
+                                  const EdgeInsets.only(left: 12, right: 12),
+                              shadowColor: Colors.teal.shade300,
+                              elevation: 5.0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                            ),
+                            onPressed: () {
+                              if (value == listAnnee[0]) {
+                                DInfo.toastError("Faites un Choix svp !!");
+                              } else {
+                                setState(() {});
+                                Navigator.of(context).pop();
+                                searchId();
+                              }
+                            },
+                            child: CustomText(
+                              "soumettre",
+                              color: Colors.white,
+                              tex: 0.85,
+                            )),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                  ],
+                )));
+  }
+
+  searchId() {
+    for (var i = 0; i < feedAnnee.length; i++) {
+      if (value == feedAnnee[i].libelleAnnee.toString()) {
+        setState(() {
+          idValue = int.parse(feedAnnee[i].idAnnee.toString());
+        });
+      }
+    }
+    saveLastAnneeID!.setInt('lastAnneeID', int.parse(idValue.toString()));
+    int newInt = (saveLastAnneeID!.getInt('lastAnneeID') ?? 0);
+    debugPrint("idlast111 : $newInt");
+  }
+
+  loadAnnee() async {
+    List<AnneeModel> result = await Annee().listAnnee();
+    setState(() {
+      feedAnnee = result;
+    });
+
+    for (var i = 0; i < feedAnnee.length; i++) {
+      setState(() {
+        listAnnee.add(feedAnnee[i].libelleAnnee.toString());
+      });
+    }
   }
 }

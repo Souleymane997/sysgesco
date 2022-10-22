@@ -49,7 +49,7 @@ class Enseignant with ChangeNotifier {
     return result;
   }
 
-  Future<bool> insertEleve(EnseignantModel ens) async {
+  Future<bool> insertEns(EnseignantModel ens) async {
     String lien = await checkLien();
     final client = http.Client();
 
