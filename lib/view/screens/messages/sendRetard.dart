@@ -1,5 +1,7 @@
 // ignore_for_file: file_names, avoid_print
 
+import 'dart:async';
+
 import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:sms_advanced/sms_advanced.dart';
@@ -7,7 +9,9 @@ import 'package:sms_advanced/sms_advanced.dart';
 import '../../../functions/colors.dart';
 import '../../../functions/custom_text.dart';
 import '../../../functions/fonctions.dart';
+import '../../../models/config_sms_Model.dart';
 import '../../../models/eleve_model.dart';
+import '../../../services/database.dart';
 
 class SendRetard extends StatefulWidget {
   const SendRetard({super.key, required this.eleve, required this.classe});
@@ -24,21 +28,38 @@ class _SendRetardState extends State<SendRetard> {
   bool choix = false;
   DateTime date = DateTime.now();
   String date1 = "";
-
+  List<SmsModel> feedConfig = [];
   SmsSender sender = SmsSender();
+  SmsModel verType = SmsModel(idconfig: 5, poste: "", lycee: "");
 
   String absenceModel = "";
   String retardModel = "";
 
+  loadConfig() async {
+    List<SmsModel> result = await AppDatabase.instance.listConfig();
+    setState(() {
+      feedConfig = result;
+      verType = feedConfig.first;
+      debugPrint("Long : ${feedConfig.length}");
+    });
+
+    Timer(const Duration(milliseconds: 500), () {
+      setState(() {
+        absenceModel =
+            '''** ${verType.lycee} **\n\nL'élève "${eleves.nomEleve} ${eleves.prenomEleve}" en classe de  "${widget.classe}" est absent ce jour $date1''';
+
+        retardModel =
+            '''** ${verType.lycee} **\n\nL'élève "${eleves.nomEleve} ${eleves.prenomEleve}" en classe de  "${widget.classe}" est en retard aux cours $date1 ''';
+      });
+    });
+  }
+
   @override
   void initState() {
+    loadConfig();
     date1 = formatDate(date);
     eleves = widget.eleve;
-    absenceModel =
-        '''** Lycée Privé Wend Yam **\n\nL'élève "${eleves.nomEleve} ${eleves.prenomEleve}" en classe de  "${widget.classe}" est absent ce jour $date1''';
 
-    retardModel =
-        '''** Lycée Privé Wend Yam **\n\nL'élève "${eleves.nomEleve} ${eleves.prenomEleve}" en classe de  "${widget.classe}" est en retard aux cours $date1 ''';
     super.initState();
   }
 

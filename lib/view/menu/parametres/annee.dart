@@ -236,7 +236,7 @@ class _AnneePageState extends State<AnneePage> {
                       },
                       decoration: InputDecoration(
                         labelText: (!modify)
-                            ? "Libelle Classe"
+                            ? "Libelle Annee"
                             : " ${elem.libelleAnnee.toString()}",
                         focusedBorder: const OutlineInputBorder(
                             borderSide:

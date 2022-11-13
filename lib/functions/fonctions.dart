@@ -105,31 +105,31 @@ PreferredSizeWidget menuAppBar(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(" ${selectList.length}"),
+            Text("Sélectionnés...  ${selectList.length}"),
           ],
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            IconButton(onPressed: () {}, icon: const Icon(Icons.note_add)),
-            Container(
-              width: 10,
-            ),
-            IconButton(
-                onPressed: () {}, icon: const Icon(Icons.notifications_active)),
-            Container(
-              width: 10,
-            ),
-            IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.reply_all,
-                )),
-            Container(
-              width: 10,
-            ),
-          ],
-        ),
+        // Row(
+        //   mainAxisAlignment: MainAxisAlignment.end,
+        //   children: [
+        //     IconButton(onPressed: () {}, icon: const Icon(Icons.note_add)),
+        //     Container(
+        //       width: 10,
+        //     ),
+        //     IconButton(
+        //         onPressed: () {}, icon: const Icon(Icons.notifications_active)),
+        //     Container(
+        //       width: 10,
+        //     ),
+        //     IconButton(
+        //         onPressed: () {},
+        //         icon: const Icon(
+        //           Icons.reply_all,
+        //         )),
+        //     Container(
+        //       width: 10,
+        //     ),
+        //   ],
+        // ),
       ],
     ),
   );
@@ -144,7 +144,8 @@ DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
       textAlign: TextAlign.center,
     ));
 
-Widget cardOption(String option, Widget x, BuildContext context ,IconData icon) {
+Widget cardOption(
+    String option, Widget x, BuildContext context, IconData icon) {
   return Column(
     children: [
       Container(
@@ -167,10 +168,7 @@ Widget cardOption(String option, Widget x, BuildContext context ,IconData icon) 
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: SizedBox(
-                    width: 40.0,
-                    height: 40.0,
-                    child: Icon(icon)),
+                child: SizedBox(width: 40.0, height: 40.0, child: Icon(icon)),
               ),
               const SizedBox(
                 width: 10.0,
@@ -311,7 +309,6 @@ String formatDate(DateTime dateX) {
   return date1;
 }
 
-
 // nettoie les contrlleurs
 void clearControler(List<TextEditingController> listController) {
   for (var i = 0; i < listController.length; i++) {
@@ -331,7 +328,6 @@ bool validateAndSave(GlobalKey<FormState> formKey) {
   }
 }
 
-
 checkLien() async {
   SharedPreferences saveLienHttp = await SharedPreferences.getInstance();
   String chaine = (saveLienHttp.getString('lienHttp') ?? "");
@@ -340,32 +336,103 @@ checkLien() async {
 }
 
 convert(String chaine) {
-    return (chaine.length > 1) ? chaine.toString() : "0$chaine";
+  return (chaine.length > 1) ? chaine.toString() : "0$chaine";
+}
+
+String number(int i) {
+  switch (i) {
+    case 1:
+      return "première";
+
+    case 2:
+      return "deuxième";
+
+    case 3:
+      return "troisième";
+
+    case 4:
+      return "quatrième";
+
+    case 5:
+      return "cinquième";
+
+    default:
+      return "";
   }
+}
 
+cardMenuRound(
+    String title, IconData icon, Color color, Widget x, BuildContext context) {
+  return Ink(
+      child: InkWell(
+    onTap: () {
+      Timer(
+          const Duration(milliseconds: 300),
+          () => {
+                Navigator.of(context).push(
+                  SlideRightRoute(
+                      child: x, page: x, direction: AxisDirection.left),
+                )
+              });
+    },
+    child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+      Container(
+        margin: EdgeInsets.all(MediaQuery.of(context).size.width * 0.02),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: Icon(icon, size: 40.0, color: blanc()),
+      ),
+      SizedBox(
+        width: MediaQuery.of(context).size.width * 0.35,
+        child: Text(
+          title,
+          overflow: TextOverflow.visible,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.w500,
+            fontFamily: "Roboto",
+            overflow: TextOverflow.visible,
+          ),
+          //softWrap: true,
+        ),
+      )
+    ]),
+  ));
+}
 
-
-  String number(int i) {
-    switch (i) {
-      case 1:
-        return "première";
-
-      case 2:
-        return "deuxième";
-
-      case 3:
-        return "troisième";
-
-      case 4:
-        return "quatrième";
-
-      case 5:
-        return "cinquième";
-
-      default:
-        return "";
-    }
-  }
-
-
-
+Future<void> dialogueNote(BuildContext context, String text) async {
+  return await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogcontext) => StatefulBuilder(
+          builder: (stfContext, stfsetState) => SimpleDialog(
+                shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                contentPadding: const EdgeInsets.only(top: 2.0),
+                backgroundColor: Colors.white,
+                children: [
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Center(
+                    child: CircularProgressIndicator(
+                      color: teal(),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  CustomText(
+                    "$text....",
+                    color: noir(),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                ],
+              )));
+}

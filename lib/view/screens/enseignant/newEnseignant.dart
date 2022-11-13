@@ -28,6 +28,7 @@ class _NewEnseignantPagesState extends State<NewEnseignantPages> {
   DateTime date = DateTime(2022, 12, 24);
 
   List<ClasseModel> feedClasse = [];
+  bool modify = false;
 
   @override
   void initState() {
@@ -39,6 +40,16 @@ class _NewEnseignantPagesState extends State<NewEnseignantPages> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(" Nouvel Enseignant "),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (modify) {
+              Navigator.pop(context, true);
+            } else {
+              Navigator.pop(context, false);
+            }
+          },
+        ),
       ),
       body: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -298,6 +309,7 @@ class _NewEnseignantPagesState extends State<NewEnseignantPages> {
                   ),
                   onPressed: () async {
                     if (validateAndSave()) {
+                      dialogueNote(context, "Enregistrement en cours");
                       String date1 = formatDate(date);
 
                       EnseignantModel newEns = EnseignantModel(
@@ -321,6 +333,7 @@ class _NewEnseignantPagesState extends State<NewEnseignantPages> {
                           onConfirmBtnTap: () {
                             Navigator.pop(context);
                             Navigator.pop(context);
+                            Navigator.pop(context, true);
                           },
                         );
                         // DInfo.snackBarSuccess(

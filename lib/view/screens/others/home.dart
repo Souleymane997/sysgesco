@@ -171,139 +171,142 @@ class _HomePageState extends State<HomePage> {
             });
         return exit;
       },
-      child: SafeArea(
-        child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.teal,
-            title: const Text("Accueil"),
-            actions: [
-              IconButton(
-                  onPressed: () {
-                    searchAnnee(context);
-                  },
-                  icon: const Icon(Icons.filter_center_focus)),
-              Container(
-                width: 20,
-              ),
-              InkWell(
-                onTap: () {
-                  debugPrint("show zone search");
-                  setState(() {
-                    showSearch = !showSearch;
-                    changed = "";
-                    editingController.text = "";
-                    boarding = true;
-                  });
-                },
-                child: (!showSearch)
-                    ? const Icon(
-                        Icons.search,
-                        color: Colors.white,
-                        size: 25.0,
-                      )
-                    : const Icon(
-                        Icons.cancel,
-                        color: Colors.white,
-                        size: 25.0,
-                      ),
-              ),
-              Container(
-                width: 20,
-              )
-            ],
-          ),
-          drawer: const NavDrawer(choix: 1),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+      child: RefreshIndicator(
+        onRefresh: refrech,
+        child: SafeArea(
+          child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.teal,
+              title: const Text("Accueil"),
+              actions: [
+                IconButton(
+                    onPressed: () {
+                      searchAnnee(context);
+                    },
+                    icon: const Icon(Icons.filter_center_focus)),
                 Container(
-                  height: 8.0,
+                  width: 20,
                 ),
-                (showSearch)
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Container(
-                              margin: EdgeInsets.only(
-                                  left:
-                                      MediaQuery.of(context).size.width * 0.12,
-                                  right:
-                                      MediaQuery.of(context).size.width * 0.12),
-                              child: TextField(
-                                controller: editingController,
-                                onChanged: (value) {
-                                  changed = value;
-                                  if (changed.isNotEmpty) {
-                                    setState(() {
-                                      feedSearchClasse =
-                                          Classe().listClasse(query: changed);
-                                      boarding = false;
-                                    });
-                                  } else {
-                                    setState(() {
-                                      boarding = true;
-                                    });
-                                  }
-                                },
-                                decoration: InputDecoration(
-                                  contentPadding:
-                                      const EdgeInsets.symmetric(vertical: 0.0),
-                                  border: const OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(10.0))),
-                                  prefixIcon: const Icon(Icons.search),
-                                  suffixIcon: changed.isNotEmpty
-                                      ? GestureDetector(
-                                          child: const Icon(Icons.close),
-                                          onTap: () {
-                                            setState(() {
-                                              editingController.clear();
-                                              changed = '';
-                                              boarding = true;
-                                            });
+                InkWell(
+                  onTap: () {
+                    debugPrint("show zone search");
+                    setState(() {
+                      showSearch = !showSearch;
+                      changed = "";
+                      editingController.text = "";
+                      boarding = true;
+                    });
+                  },
+                  child: (!showSearch)
+                      ? const Icon(
+                          Icons.search,
+                          color: Colors.white,
+                          size: 25.0,
+                        )
+                      : const Icon(
+                          Icons.cancel,
+                          color: Colors.white,
+                          size: 25.0,
+                        ),
+                ),
+                Container(
+                  width: 20,
+                )
+              ],
+            ),
+            drawer: const NavDrawer(choix: 1),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 8.0,
+                  ),
+                  (showSearch)
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Container(
+                                margin: EdgeInsets.only(
+                                    left: MediaQuery.of(context).size.width *
+                                        0.12,
+                                    right: MediaQuery.of(context).size.width *
+                                        0.12),
+                                child: TextField(
+                                  controller: editingController,
+                                  onChanged: (value) {
+                                    changed = value;
+                                    if (changed.isNotEmpty) {
+                                      setState(() {
+                                        feedSearchClasse =
+                                            Classe().listClasse(query: changed);
+                                        boarding = false;
+                                      });
+                                    } else {
+                                      setState(() {
+                                        boarding = true;
+                                      });
+                                    }
+                                  },
+                                  decoration: InputDecoration(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 0.0),
+                                    border: const OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(10.0))),
+                                    prefixIcon: const Icon(Icons.search),
+                                    suffixIcon: changed.isNotEmpty
+                                        ? GestureDetector(
+                                            child: const Icon(Icons.close),
+                                            onTap: () {
+                                              setState(() {
+                                                editingController.clear();
+                                                changed = '';
+                                                boarding = true;
+                                              });
 
-                                            FocusScope.of(context)
-                                                .requestFocus(FocusNode());
-                                          },
-                                        )
-                                      : null,
-                                  hintText: " rechercher une Classe",
-                                  // border: InputBorder.none,
+                                              FocusScope.of(context)
+                                                  .requestFocus(FocusNode());
+                                            },
+                                          )
+                                        : null,
+                                    hintText: " rechercher une Classe",
+                                    // border: InputBorder.none,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      )
-                    : Container(),
-                Container(
-                  height: 5.0,
-                ),
-                (loading)
-                    ? Expanded(child: gridClasse())
-                    : Center(child: pageLoading(context)),
-              ],
+                          ],
+                        )
+                      : Container(),
+                  Container(
+                    height: 5.0,
+                  ),
+                  (loading)
+                      ? Expanded(child: gridClasse())
+                      : Center(child: pageLoading(context)),
+                ],
+              ),
             ),
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              dashBordDialog();
-            },
-            elevation: 10.0,
-            backgroundColor: Colors.amber[700],
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(40.0),
-            ),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                  image: DecorationImage(
-                image: AssetImage('assets/images/grid.png'),
-                fit: BoxFit.contain,
-              )),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                dashBordDialog();
+              },
+              elevation: 10.0,
+              backgroundColor: Colors.amber[700],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(40.0),
+              ),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                    image: DecorationImage(
+                  image: AssetImage('assets/images/grid.png'),
+                  fit: BoxFit.contain,
+                )),
+              ),
             ),
           ),
         ),
@@ -324,12 +327,15 @@ class _HomePageState extends State<HomePage> {
     saveLienHttp = await SharedPreferences.getInstance();
 
     String res = await Annee().lastAnneeID();
+    debugPrint("resultat : $res");
 
     int newInt = (saveLastAnneeID!.getInt('lastAnneeID') ?? 0);
     String chaine = (saveLienHttp!.getString('lienHttp') ?? "");
 
-    saveLastAnneeID!.setInt('lastAnneeID', int.parse(res.toString()));
-    newInt = (saveLastAnneeID!.getInt('lastAnneeID') ?? 0);
+    if (res != newInt.toString()) {
+      saveLastAnneeID!.setInt('lastAnneeID', int.parse(res.toString()));
+      newInt = (saveLastAnneeID!.getInt('lastAnneeID') ?? 0);
+    }
 
     debugPrint("idlast : $newInt");
     debugPrint("lien Http : $chaine");
@@ -668,5 +674,12 @@ class _HomePageState extends State<HomePage> {
         listAnnee.add(feedAnnee[i].libelleAnnee.toString());
       });
     }
+  }
+
+  Future refrech() async {
+    await Future.delayed(const Duration(seconds: 1));
+
+    checkLastAnneID();
+    call();
   }
 }

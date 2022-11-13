@@ -81,6 +81,7 @@ class Eleve with ChangeNotifier {
               "nomEleve": eleve.nomEleve,
               "prenomEleve": eleve.prenomEleve,
               "dateNaissance": eleve.dateNaissance,
+              "matriculeEleve": eleve.matriculeEleve,
               "phoneParent": eleve.phoneParent
             }),
             headers: {
@@ -153,5 +154,94 @@ class Eleve with ChangeNotifier {
     }
 
     return idEleve;
+  }
+
+  Future editEleve(ElevesModel eleve) async {
+    String lien = await checkLien();
+    final client = http.Client();
+
+    final response = await client.put(
+        Uri.parse("$lien${Config.apiKey}${Config.EditEleve}/${eleve.idEleve}"),
+        body: jsonEncode({
+          "nomEleve": eleve.nomEleve,
+          "prenomEleve": eleve.prenomEleve,
+          "dateNaissance": eleve.dateNaissance,
+          "matriculeEleve": eleve.matriculeEleve,
+          "phoneParent": eleve.phoneParent
+        }),
+        headers: {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+          "Authorization": "Some token"
+        });
+
+    try {
+      notifyListeners();
+      // ignore: unrelated_type_equality_checks
+      if (response.body.contains("true")) {
+        debugPrint("hello true");
+        return true;
+      } else {
+        return false;
+      }
+    } on Exception catch (e) {
+      debugPrint("fectch error $e");
+    }
+    // ignore: unused_catch_clause
+    return res;
+  }
+
+  // iste des eleves
+  Future<ElevesModel?> oneEleve({required int id1}) async {
+    String lien = await checkLien();
+    final client = http.Client();
+    final response = await client
+        .get(Uri.parse("$lien${Config.apiKey}${Config.GetEleve}/$id1"));
+
+    try {
+      if (response.body.isNotEmpty) {
+        data = json.decode(utf8.decode(response.bodyBytes));
+        result = data.map((e) => ElevesModel.fromJson(e)).toList();
+
+        debugPrint(" longueur : ${result.length}");
+      } else {
+        debugPrint("fectch error");
+      }
+
+      notifyListeners();
+      // ignore: unused_catch_clause
+    } on Exception catch (e) {
+      debugPrint("fectch error");
+    }
+
+    if (result.isNotEmpty) {
+      return result.first;
+    }
+
+    return null;
+  }
+
+  // iste des eleves
+  Future<bool> deleteEleve({required int id}) async {
+    String lien = await checkLien();
+    final client = http.Client();
+    final response = await client
+        .get(Uri.parse("$lien${Config.apiKey}${Config.DeleteEleve}/$id"));
+
+    try {
+      notifyListeners();
+      // ignore: unrelated_type_equality_checks
+      if (response.body.contains("true")) {
+        debugPrint("hello true");
+        return true;
+      } else {
+        return false;
+      }
+      // ignore: unused_catch_clause
+    } on Exception catch (e) {
+      debugPrint("fectch error");
+    }
+
+    return res;
   }
 }

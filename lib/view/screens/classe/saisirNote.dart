@@ -37,6 +37,9 @@ class _SaisirNotePageState extends State<SaisirNotePage> {
   DateTime dateDebut = DateTime.now();
   late String date;
 
+  TextEditingController coefController = TextEditingController();
+  String coeff = "0";
+
   String value = '-- choisir un Trimestre --';
   final listTrimestre = ['-- choisir un Trimestre --'];
   String choixTrimestre = "-- choisir un Trimestre --";
@@ -285,6 +288,45 @@ class _SaisirNotePageState extends State<SaisirNotePage> {
                         const SizedBox(
                           height: 25,
                         ),
+                        Container(
+                          margin: const EdgeInsets.only(left: 15, right: 15),
+                          padding: const EdgeInsets.only(left: 15),
+                          height: 50,
+                          width: MediaQuery.of(context).size.width * 0.4,
+                          decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(10)),
+                          child: Center(
+                            child: TextFormField(
+                              maxLines: 1,
+                              controller: coefController,
+                              keyboardType: TextInputType.number,
+                              onSaved: (onSavedval) {
+                                coefController.text = onSavedval!;
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return " entrer un coeff svp !! ";
+                                }
+                                return null;
+                              },
+                              decoration: const InputDecoration(
+                                labelText: "Coefficient",
+                                hintText: "Coefficient",
+                                focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        color: Colors.teal, width: 1),
+                                    borderRadius: BorderRadius.all(
+                                        Radius.circular(10.0))),
+                                border: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        color: Colors.teal, width: 0),
+                                    borderRadius: BorderRadius.all(
+                                        Radius.circular(10.0))),
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -313,13 +355,17 @@ class _SaisirNotePageState extends State<SaisirNotePage> {
                                 searchId();
                                 if (noteController.text.isEmpty ||
                                     numeroValue == numeroNote[0] ||
-                                    value == listTrimestre[0]) {
+                                    value == listTrimestre[0] ||
+                                    coefController.text.isEmpty) {
                                   DInfo.snackBarError(
                                       "Erreur , Verifer tous les champs",
                                       context);
                                 } else {
                                   date = formatDate(dateDebut);
                                   int numNote = int.parse(numeroValue);
+                                  setState(() {
+                                    coeff = coefController.text;
+                                  });
 
                                   bool res = await Notes().insertNote(
                                       noteController.text.toString(),
@@ -328,16 +374,18 @@ class _SaisirNotePageState extends State<SaisirNotePage> {
                                       anneeID,
                                       numNote,
                                       trismetreID,
-                                      matiereID);
+                                      matiereID,
+                                      coeff.toString());
 
                                   if (res) {
-                                  CoolAlert.show(
+                                    CoolAlert.show(
                                       context: context,
                                       type: CoolAlertType.success,
-                                      title: "${widget.eleve.nomEleve} ${widget.eleve.prenomEleve}",
+                                      title:
+                                          "${widget.eleve.nomEleve} ${widget.eleve.prenomEleve}",
                                       text:
                                           "\nLa note $numNote a été Enregistrée avec Success",
-                                          loopAnimation: true,
+                                      loopAnimation: true,
                                       confirmBtnText: 'OK',
                                       barrierDismissible: false,
                                       confirmBtnColor: tealClaire(),

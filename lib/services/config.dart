@@ -4,7 +4,6 @@ class Config {
   static const String appName = "SYSGESCO";
 
   static const apiKey = "RDT563S45E4DF5G6YKOP451"; // ";
-
   static const String apiURL = "http://192.168.43.139/Api/";
 
   //* eleves
@@ -14,6 +13,10 @@ class Config {
   static const String GetLastEleve = "/Eleve/getLastEleve";
   static const String InsertEleve = "/Eleve/insertEleve";
   static const String InsertLien = "/Eleve/insertLien";
+  static const String EditEleve = "/Eleve/editEleve";
+  static const String GetEleve = "/Eleve/getEleve";
+  static const String DeleteEleve = "/Eleve/deleteEleve";
+
 
   //*
 
@@ -48,6 +51,9 @@ class Config {
   //* trismetre
 
   static const String GetTrimestre = "/Trimestre/getTrimestre";
+  static const String InsertTrimestre = "/Trimestre/insertTrimestre";
+  static const String EditTrimestre = "/Trimestre/editTrimestre";
+  static const String DeleteTrimestre = "/Trimestre/deleteTrimestre";
 
   //*
 
@@ -66,6 +72,8 @@ class Config {
 
   static const String GetAllEns = "/Enseignant/getAllEns";
   static const String InsertEns = "/Enseignant/insertEns";
+  static const String EditEns = "/Enseignant/editEns";
+  static const String DeleteEns = "/Enseignant/deleteEns";
 
   //*
 
@@ -80,6 +88,9 @@ class Config {
   //* jour
 
   static const String GetJour = "/Jour/getJour";
+  static const String InsertJour = "/Jour/insertJour";
+  static const String EditJour = "/Jour/editJour";
+  static const String DeleteJour = "/Jour/deleteJour";
 
   //*
 

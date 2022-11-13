@@ -10,9 +10,10 @@ import 'package:sms_advanced/sms_advanced.dart';
 import '../../../controllers/note_controller.dart';
 import '../../../functions/colors.dart';
 import '../../../functions/custom_text.dart';
-import '../../../functions/fonctions.dart';
+import '../../../models/config_sms_Model.dart';
 import '../../../models/eleve_model.dart';
 import '../../../models/note_model.dart';
+import '../../../services/database.dart';
 
 class SendNotePage extends StatefulWidget {
   const SendNotePage(
@@ -49,6 +50,9 @@ class _SendNotePageState extends State<SendNotePage> {
   late SharedPreferences? saveTrimestreID;
   late SharedPreferences? saveNoteID;
 
+  List<SmsModel> feedConfig = [];
+  SmsModel verType = SmsModel(idconfig: 5, poste: "", lycee: "");
+
   void checkID() async {
     saveClasseID = await SharedPreferences.getInstance();
     saveLastAnneeID = await SharedPreferences.getInstance();
@@ -84,8 +88,24 @@ class _SendNotePageState extends State<SendNotePage> {
     });
   }
 
+  loadConfig() async {
+    List<SmsModel> result = await AppDatabase.instance.listConfig();
+    setState(() {
+      feedConfig = result;
+      verType = feedConfig.first;
+      debugPrint("Long : ${feedConfig.length}");
+    });
+
+    Timer(const Duration(milliseconds: 1000), () {
+      setState(() {
+        textMessage = '''** ${verType.lycee} **\n''';
+      });
+    });
+  }
+
   @override
   void initState() {
+    loadConfig();
     eleves = widget.eleve;
     setState(() {
       id = int.parse(eleves.idEleve ?? "0");
@@ -93,9 +113,6 @@ class _SendNotePageState extends State<SendNotePage> {
 
     debugPrint("id.... $id");
     checkID();
-    String a = note();
-    textMessage =
-        '''** Lycée Privé Wend Yam **\n\nL'élève "${eleves.nomEleve} ${eleves.prenomEleve}" en classe de  "${widget.classe}" a eu $a  a la $noteID Note de ${widget.matiere} au Trismetre $trimestreID ''';
 
     debugPrint(textMessage);
 
@@ -250,14 +267,16 @@ class _SendNotePageState extends State<SendNotePage> {
                     ),
                     onPressed: () {
                       String a = note();
-                      String numero = number(noteID);
-                      textMessage =
-                          '''** Lycée Privé Wend Yam **\n\nL'élève ${eleves.nomEleve.toString().toUpperCase()} ${eleves.prenomEleve.toString().toUpperCase()} en classe de  "${widget.classe.toString().toUpperCase()}" a eu $a  a la $numero  Note en ${widget.matiere} au Trismetre $trimestreID ''';
+                      setState(() {
+                        textMessage =
+                            '''**L'élève ${eleves.prenomEleve} a eu $a à la note $noteID de ${widget.matiere} au trimestre $trimestreID..''';
+                      });
 
-                      debugPrint(textMessage);
+                      //L'élève "${eleves.nomEleve} ${eleves.prenomEleve}" en classe de "${widget.classe}" a eu $a à la ${noteID.toString()} Note de ${widget.matiere} au Trismetre ${trimestreID.toString()}
 
-                      SmsMessage message =
-                          SmsMessage(eleves.phoneParent, textMessage);
+                      SmsMessage message = SmsMessage(
+                          eleves.phoneParent, textMessage.toString());
+
                       debugPrint(textMessage);
 
                       message.onStateChanged.listen((state) {
@@ -267,7 +286,10 @@ class _SendNotePageState extends State<SendNotePage> {
                           debugPrint("SMS is delivered!");
                         }
                       });
+
                       sender.sendSms(message);
+
+                      //sender.sendSms(message);
                       CoolAlert.show(
                         context: context,
                         type: CoolAlertType.success,

@@ -91,7 +91,7 @@ class Notes with ChangeNotifier {
   }
 
   Future<bool> insertNote(String notesEleve, String dateNote, int id1, int id2,
-      int id3, int id4, int id5 ) async {
+      int id3, int id4, int id5,String coefficient) async {
     final client = http.Client();
       String lien = await checkLien();
 
@@ -101,6 +101,7 @@ class Notes with ChangeNotifier {
         body: jsonEncode({
           "notesEleve": double.parse(notesEleve),
           "dateNote": dateNote.toString(),
+          "coefficient": double.parse(coefficient),
         }),
         headers: {
           'Content-type': 'application/json',

@@ -102,7 +102,6 @@ class _DetailsElevePageState extends State<DetailsElevePage> {
       setState(() {
         loading = true;
       });
-      
     });
   }
 
@@ -275,36 +274,41 @@ class _DetailsElevePageState extends State<DetailsElevePage> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             (long >= 1)
-                ? cardWidget(
-                    notes[0].notesEleve, int.parse(notes[0].numNote), num)
+                ? Expanded(
+                    child: cardNote(
+                        notes[0].notesEleve, int.parse(notes[0].numNote), num))
                 : Container(),
             const SizedBox(
               height: 5.0,
             ),
             (long >= 2)
-                ? cardWidget(
-                    notes[1].notesEleve, int.parse(notes[1].numNote), num)
+                ? Expanded(
+                    child: cardNote(
+                        notes[1].notesEleve, int.parse(notes[1].numNote), num))
                 : Container(),
             const SizedBox(
               height: 5.0,
             ),
             (long >= 3)
-                ? cardWidget(
-                    notes[2].notesEleve, int.parse(notes[2].numNote), num)
+                ? Expanded(
+                    child: cardNote(
+                        notes[2].notesEleve, int.parse(notes[2].numNote), num))
                 : Container(),
             const SizedBox(
               height: 5.0,
             ),
             (long >= 4)
-                ? cardWidget(
-                    notes[3].notesEleve, int.parse(notes[3].numNote), num)
+                ? Expanded(
+                    child: cardNote(
+                        notes[3].notesEleve, int.parse(notes[3].numNote), num))
                 : Container(),
             const SizedBox(
               height: 5.0,
             ),
-            (long > 5)
-                ? cardWidget(
-                    notes[4].notesEleve, int.parse(notes[4].numNote), num)
+            (long >= 5)
+                ? Expanded(
+                    child: cardNote(
+                        notes[4].notesEleve, int.parse(notes[4].numNote), num))
                 : Container(),
             const SizedBox(
               height: 5.0,
@@ -326,10 +330,8 @@ class _DetailsElevePageState extends State<DetailsElevePage> {
     }
   }
 
-//List<String>? feedNote
-  Widget cardWidget(String note, int numNote, int numTrismestre) {
-    return Card(
-      margin: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+  Widget cardNote(String note, int numNote, int numTrismestre) {
+    return Ink(
       child: InkWell(
         onTap: () {
           debugPrint("trismetre $numTrismestre numNote $numNote note $note");
@@ -353,27 +355,24 @@ class _DetailsElevePageState extends State<DetailsElevePage> {
           );
         },
         child: Container(
-          color: Colors.transparent,
-          child: Padding(
+            margin: const EdgeInsets.all(3),
             padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: amberFone().withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: amberFone(),
+                width: 2.0,
+              ),
+            ),
             child: CustomText(
-              " $note ",
+              convert(note),
               tex: TailleText(context).soustitre * 0.8,
-              color: tealFonce(),
+              color: teal(),
               textAlign: TextAlign.center,
               fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
+            )),
       ),
     );
-  }
-
-  conVert(String s) {
-    if (s.length < 2) {
-      String v = "0$s";
-      s = v;
-    }
-    return s;
   }
 }

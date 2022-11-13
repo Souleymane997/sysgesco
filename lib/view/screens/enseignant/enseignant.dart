@@ -69,12 +69,7 @@ class _EnseignantPagesState extends State<EnseignantPages> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.of(context).push(
-              SlideRightRoute(
-                  child: const NewEnseignantPages(),
-                  page: const NewEnseignantPages(),
-                  direction: AxisDirection.left),
-            );
+            newFunction(context);
           },
           elevation: 10.0,
           backgroundColor: teal(),
@@ -122,16 +117,7 @@ class _EnseignantPagesState extends State<EnseignantPages> {
         padding: const EdgeInsets.only(left: 0.5, right: 0.5),
         child: ListTile(
           onTap: () {
-            Navigator.of(context).push(
-              SlideRightRoute(
-                  child: DetailsEnseignants(
-                    enseignant: element,
-                  ),
-                  page: DetailsEnseignants(
-                    enseignant: element,
-                  ),
-                  direction: AxisDirection.left),
-            );
+            onTapFunction(context, element);
           },
           leading: Stack(children: [
             CircleAvatar(
@@ -179,5 +165,59 @@ class _EnseignantPagesState extends State<EnseignantPages> {
     await Future.delayed(const Duration(seconds: 1));
 
     await loadEns();
+  }
+
+  onTapFunction(BuildContext context, EnseignantModel element) async {
+    // final res = await Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //         builder: (context) => ViewElevePage(
+    //               eleve: element,
+    //             )));
+    final res = await Navigator.of(context).push(
+      SlideRightRoute(
+          child: DetailsEnseignants(
+            enseignant: element,
+          ),
+          page: DetailsEnseignants(
+            enseignant: element,
+          ),
+          direction: AxisDirection.left),
+    );
+
+    if (res) refreshList();
+  }
+
+  newFunction(BuildContext context) async {
+    // final res = await Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //         builder: (context) => ViewElevePage(
+    //               eleve: element,
+    //             )));
+    final res = await Navigator.of(context).push(
+      SlideRightRoute(
+          child: const NewEnseignantPages(),
+          page: const NewEnseignantPages(),
+          direction: AxisDirection.left),
+    );
+
+    if (res) refreshList();
+  }
+
+  refreshList() {
+    Future.delayed(const Duration(milliseconds: 1));
+    setState(() {
+      loading = false;
+      build(context);
+    });
+
+    Timer(const Duration(milliseconds: 5), () {
+      Future<List<EnseignantModel>> result = Enseignant().listEns();
+      setState(() {
+        feedEns = result;
+        loading = true;
+      });
+    });
   }
 }

@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import '../../functions/fonctions.dart';
 import 'parametres/annee.dart';
 import 'parametres/classe.dart';
+import 'parametres/jour.dart';
 import 'parametres/matiere.dart';
 import 'parametres/serveur.dart';
+import 'parametres/trimestre.dart';
 
 class ParametrePage extends StatefulWidget {
   const ParametrePage({super.key});
@@ -42,12 +44,12 @@ class _ParametrePageState extends State<ParametrePage> {
             Container(
               height: 20.0,
             ),
-            cardOption("Gestion des Trismestres", const MatierePage(), context,
-                Icons.settings),
+            cardOption("Gestion des Trismestres", const TrismetrePage(),
+                context, Icons.settings),
             Container(
               height: 20.0,
             ),
-            cardOption("Gestion des Jours ", const ServeurPage(), context,
+            cardOption("Gestion des Jours ", const JourPage(), context,
                 Icons.settings),
             Container(
               height: 20.0,

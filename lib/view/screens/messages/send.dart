@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_interpolation_to_compose_strings
+
 import 'dart:async';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sms_advanced/sms_advanced.dart';
+import 'package:sysgesco/view/screens/messages/sendEmploi.dart';
 import 'package:sysgesco/view/screens/messages/sendNote.dart';
 import 'package:sysgesco/view/screens/messages/sendRetard.dart';
 
@@ -12,6 +15,7 @@ import '../../../controllers/classe_controller.dart';
 import '../../../controllers/eleve_controller.dart';
 import '../../../controllers/matiere_controller.dart';
 import '../../../controllers/note_controller.dart';
+import '../../../controllers/seance_controller.dart';
 import '../../../controllers/trimestre_controller.dart';
 import '../../../functions/colors.dart';
 import '../../../functions/custom_text.dart';
@@ -19,10 +23,13 @@ import '../../../functions/dialoguetoast.dart';
 import '../../../functions/fonctions.dart';
 import '../../../functions/slidepage.dart';
 import '../../../models/classe_model.dart';
+import '../../../models/config_sms_Model.dart';
 import '../../../models/eleve_model.dart';
 import '../../../models/matiere_model.dart';
 import '../../../models/note_model.dart';
+import '../../../models/seance_model.dart';
 import '../../../models/trimestre_model.dart';
+import '../../../services/database.dart';
 import 'sendConvocation.dart';
 
 class EnvoiPage extends StatefulWidget {
@@ -50,7 +57,11 @@ class _EnvoiPageState extends State<EnvoiPage> {
     "Envoi des Retars & Absences"
   ];
 
+  List<SmsModel> feedConfig = [];
+  SmsModel verType = SmsModel(idconfig: 5, poste: "", lycee: "");
+
   SmsSender sender = SmsSender();
+  String textMessage = ''' bonjour ''';
   String message = ''' bonjour ''';
 
   // ignore: non_constant_identifier_names
@@ -90,6 +101,93 @@ class _EnvoiPageState extends State<EnvoiPage> {
 
 //* ********************************************************
 
+  List<SeanceModel> seanceListingLundi = [];
+  List<SeanceModel> seanceListingMardi = [];
+  List<SeanceModel> seanceListingMercredi = [];
+  List<SeanceModel> seanceListingJeudi = [];
+  List<SeanceModel> seanceListingVendredi = [];
+
+  String textMessageEmp1 = "LUNDI \n";
+  String textMessageEmp2 = "MARDI \n";
+  String textMessageEmp3 = "MERCREDI \n";
+  String textMessageEmp4 = "JEUDI \n";
+  String textMessageEmp5 = "VENDREDI \n";
+
+  charge(List<SeanceModel> list, String text) {
+    if (list.isNotEmpty) {
+      for (var i = 0; i < list.length; i++) {
+        setState(() {
+          text = "$text${list[i].heureDebut} à ${list[i].heureFin} ==> " +
+              searchNombyID(list[i].idMatieres.toString()) +
+              "\n";
+        });
+      }
+    } else {
+      setState(() {
+        text = text + "pas de Programme";
+      });
+    }
+
+    return text;
+  }
+
+  searchNombyID(String j) {
+    for (var i = 0; i < feedMatiere.length; i++) {
+      if (j == feedMatiere[i].idMatieres.toString()) {
+        return feedMatiere[i].libelleMatieres.toString();
+      }
+    }
+    return "defaut";
+  }
+
+  loadSeance() async {
+    List<SeanceModel> result1 = await Seance().listSeance(1, classeID, anneeID);
+    setState(() {
+      seanceListingLundi = result1;
+      debugPrint(seanceListingLundi.length.toString());
+      Timer(const Duration(milliseconds: 1000), () {
+        textMessageEmp1 = charge(seanceListingLundi, textMessageEmp1);
+      });
+    });
+
+    List<SeanceModel> result2 = await Seance().listSeance(2, classeID, anneeID);
+    setState(() {
+      seanceListingMardi = result2;
+      debugPrint(seanceListingMardi.length.toString());
+      Timer(const Duration(milliseconds: 1000), () {
+        textMessageEmp2 = charge(seanceListingMardi, textMessageEmp2);
+      });
+    });
+
+    List<SeanceModel> result3 = await Seance().listSeance(3, classeID, anneeID);
+    setState(() {
+      seanceListingMercredi = result3;
+      debugPrint(seanceListingMercredi.length.toString());
+      Timer(const Duration(milliseconds: 1000), () {
+        textMessageEmp3 = charge(seanceListingMercredi, textMessageEmp3);
+      });
+    });
+
+    List<SeanceModel> result4 = await Seance().listSeance(4, classeID, anneeID);
+    setState(() {
+      seanceListingJeudi = result4;
+      debugPrint(seanceListingJeudi.length.toString());
+      Timer(const Duration(milliseconds: 1000), () {
+        textMessageEmp4 = charge(seanceListingJeudi, textMessageEmp4);
+      });
+    });
+
+    List<SeanceModel> result5 = await Seance().listSeance(5, classeID, anneeID);
+    setState(() {
+      seanceListingVendredi = result5;
+      debugPrint(seanceListingVendredi.length.toString());
+      Timer(const Duration(milliseconds: 1000), () {
+        textMessageEmp5 = charge(seanceListingVendredi, textMessageEmp5);
+      });
+    });
+  }
+
+//* ********************************************************
   bool showSearch = false;
   bool boarding = true;
   String changed = '';
@@ -114,8 +212,18 @@ class _EnvoiPageState extends State<EnvoiPage> {
 //* Fin des Variables  //* Fin des Variables  //* Fin des Variables
 //* Fin des Variables  //* Fin des Variables  //* Fin des Variables
 
+  loadConfig() async {
+    List<SmsModel> result = await AppDatabase.instance.listConfig();
+    setState(() {
+      feedConfig = result;
+      verType = feedConfig.first;
+      debugPrint("Long : ${feedConfig.length}");
+    });
+  }
+
   @override
   void initState() {
+    loadConfig();
     initializeDateFormatting();
     date1 = formatDate(date);
     heure1 = " ${selectedTime.hour} h ${selectedTime.minute} ";
@@ -130,8 +238,8 @@ class _EnvoiPageState extends State<EnvoiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: (selectList.isEmpty)
-          ? AppBar(
+      appBar: 
+          AppBar(
               title: Text(title[widget.x]),
               actions: [
                 IconButton(
@@ -169,7 +277,7 @@ class _EnvoiPageState extends State<EnvoiPage> {
                 )
               ],
             )
-          : menuAppBar(selectList, context),
+          ,
       body: Center(
         child: Column(
           children: [
@@ -301,7 +409,7 @@ class _EnvoiPageState extends State<EnvoiPage> {
           ],
         ),
       ),
-      floatingActionButton: (widget.x != 3)
+      floatingActionButton: (widget.x != 3 && widget.x != 1)
           ? FloatingActionButton.extended(
               onPressed: () {
                 if (widget.x == 2) {
@@ -329,10 +437,6 @@ class _EnvoiPageState extends State<EnvoiPage> {
                     );
                   });
                 }
-
-                // Navigator.of(context).push(
-                //   SlideRightRoute(child:  const TopPage(), page: const TopPage(), direction: AxisDirection.left),
-                // );
               },
               elevation: 10.0,
               backgroundColor: amberFone(),
@@ -614,6 +718,9 @@ class _EnvoiPageState extends State<EnvoiPage> {
                             ),
                             onPressed: () {
                               searchId();
+                              if (widget.x == 1) {
+                                loadSeance();
+                              }
                               if (i == 0) {
                                 numNote = int.parse(numeroValue);
                                 if (mat == listMatiere[0] ||
@@ -632,17 +739,48 @@ class _EnvoiPageState extends State<EnvoiPage> {
                                 if (value == listClasse[0]) {
                                   DInfo.toastError("Faites des Choix svp !!");
                                 } else {
-                                  setState(() {
+                                  if (i == 1) {
+                                    debugPrint("rrrr");
                                     choixClasse = value;
-                                    choixMatiere = "";
-                                    choixTrimestre = "";
-                                  });
-                                  Navigator.of(context).pop();
+
+                                    Timer(const Duration(milliseconds: 2000),
+                                        () {
+                                      envoiEmploi();
+                                    });
+
+                                    //dialogueNote();
+
+                                    Navigator.of(context).pop();
+                                    Timer(const Duration(milliseconds: 2000),
+                                        () {
+                                      CoolAlert.show(
+                                        context: context,
+                                        type: CoolAlertType.success,
+                                        text: "Message Envoyé avec Success",
+                                        loopAnimation: true,
+                                        confirmBtnText: 'OK',
+                                        barrierDismissible: false,
+                                        confirmBtnColor: tealClaire(),
+                                        backgroundColor: teal(),
+                                        onConfirmBtnTap: () {
+                                          Navigator.pop(context);
+                                          Navigator.pop(context);
+                                        },
+                                      );
+                                    });
+                                  } else {
+                                    setState(() {
+                                      choixClasse = value;
+                                      choixMatiere = "";
+                                      choixTrimestre = "";
+                                    });
+                                    Navigator.of(context).pop();
+                                  }
                                 }
                               }
                             },
                             child: CustomText(
-                              "soumettre",
+                              (i != 1) ? "soumettre" : "envoyer",
                               color: Colors.white,
                               tex: 0.85,
                             )),
@@ -738,11 +876,11 @@ class _EnvoiPageState extends State<EnvoiPage> {
           debugPrint("1");
           Navigator.of(context).push(
             SlideRightRoute(
-                child: SendRetard(
+                child: SendEmploiPage(
                   eleve: eleve,
                   classe: choixClasse,
                 ),
-                page: SendRetard(
+                page: SendEmploiPage(
                   eleve: eleve,
                   classe: choixClasse,
                 ),
@@ -794,7 +932,7 @@ class _EnvoiPageState extends State<EnvoiPage> {
   envoiConvocation() {
     for (var i = 0; i < listEleves.length; i++) {
       message =
-          " Le Proviseur du lycée Privé Wend Yam convie les Parents de l'élève ${listEleves[i].nomEleve.toString().toUpperCase()} ${listEleves[i].prenomEleve.toString().toUpperCase()} a une importante rencontre le ${date1.toString().toUpperCase()} à ${heure1.toString().toUpperCase()} ";
+          " Le ${verType.poste} du ${verType.lycee} convie les Parents de l'élève ${listEleves[i].nomEleve.toString().toUpperCase()} ${listEleves[i].prenomEleve.toString().toUpperCase()} a une importante rencontre le ${date1.toString().toUpperCase()} à ${heure1.toString().toUpperCase()} ";
 
       sender.sendSms(SmsMessage(listEleves[i].phoneParent, message));
     }
@@ -827,11 +965,51 @@ class _EnvoiPageState extends State<EnvoiPage> {
       String a = note();
       String numero = number(noteID);
 
-      message = (a.length <= 2)
-          ? '''** Lycée Privé Wend Yam **\n\nL'élève ${listEleves[i].nomEleve.toString().toUpperCase()} ${listEleves[i].prenomEleve.toString().toUpperCase()} en classe de  ${choixClasse.toString().toUpperCase()} a eu  * $a * a la $numero  Note de ${choixMatiere.toString().toUpperCase()} au Trismetre $trimestreID '''
-          : '''** Lycée Privé Wend Yam **\n\nL'élève ${listEleves[i].nomEleve.toString().toUpperCase()} ${listEleves[i].prenomEleve.toString().toUpperCase()} en classe de  ${choixClasse.toString().toUpperCase()} n'a pas eu de $numero Note de ${choixMatiere.toString().toUpperCase()} au Trismetre $trimestreID ''';
+      textMessage = (a.length <= 2)
+          ? '''** ${verType.lycee} **\n\nL'élève ${listEleves[i].nomEleve.toString().toUpperCase()} ${listEleves[i].prenomEleve.toString().toUpperCase()} en classe de  ${choixClasse.toString().toUpperCase()} a eu  * $a * a la $numero  Note de ${choixMatiere.toString().toUpperCase()} au Trismetre $trimestreID '''
+          : '''** ${verType.lycee} **\n\nL'élève ${listEleves[i].nomEleve.toString().toUpperCase()} ${listEleves[i].prenomEleve.toString().toUpperCase()} en classe de  ${choixClasse.toString().toUpperCase()} n'a pas eu de $numero Note de ${choixMatiere.toString().toUpperCase()} au Trismetre $trimestreID ''';
 
-      debugPrint(message);
+      debugPrint(textMessage);
+
+      SmsMessage message =
+          SmsMessage(listEleves[i].phoneParent, textMessage.toString());
+
+      debugPrint(textMessage);
+
+      message.onStateChanged.listen((state) {
+        if (state == SmsMessageState.Sent) {
+          debugPrint("SMS is sent!");
+        } else if (state == SmsMessageState.Delivered) {
+          debugPrint("SMS is delivered!");
+        }
+      });
+
+      sender.sendSms(message);
+    }
+  }
+
+  envoiEmploi() async {
+    for (var i = 0; i < listEleves.length; i++) {
+      //sender.sendSms(SmsMessage(listEleves[i].phoneParent, message));
+      SmsMessage message1 =
+          SmsMessage(listEleves[i].phoneParent, textMessageEmp1);
+      sender.sendSms(message1);
+
+      SmsMessage message2 =
+          SmsMessage(listEleves[i].phoneParent, textMessageEmp2);
+      sender.sendSms(message2);
+
+      SmsMessage message3 =
+          SmsMessage(listEleves[i].phoneParent, textMessageEmp3);
+      sender.sendSms(message3);
+
+      SmsMessage message4 =
+          SmsMessage(listEleves[i].phoneParent, textMessageEmp4);
+      sender.sendSms(message4);
+
+      SmsMessage message5 =
+          SmsMessage(listEleves[i].phoneParent, textMessageEmp5);
+      sender.sendSms(message5);
     }
   }
 
@@ -1167,6 +1345,4 @@ class _EnvoiPageState extends State<EnvoiPage> {
                   ],
                 )));
   }
-
-  
 }

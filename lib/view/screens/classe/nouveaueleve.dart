@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, unused_import
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sysgesco/controllers/eleve_controller.dart';
@@ -28,6 +30,7 @@ class _NouveauPageState extends State<NouveauPage> {
   TextEditingController prenomController = TextEditingController();
   TextEditingController dateController = TextEditingController();
   TextEditingController numeroController = TextEditingController();
+  TextEditingController matriculeController = TextEditingController();
 
   late SharedPreferences? saveLastAnneeID;
   int idAnnee = 0;
@@ -313,6 +316,45 @@ class _NouveauPageState extends State<NouveauPage> {
                       child: Center(
                         child: TextFormField(
                           maxLines: 1,
+                          controller: matriculeController,
+                          onSaved: (onSavedval) {
+                            matriculeController.text = onSavedval!;
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return " entrer un Matricule svp !! ";
+                            }
+                            return null;
+                          },
+                          decoration: const InputDecoration(
+                            labelText: "Numero Matricule",
+                            hintText: "Numero Matricule",
+                            focusedBorder: OutlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Colors.teal, width: 1),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10.0))),
+                            border: OutlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Colors.teal, width: 0),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10.0))),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(left: 15, right: 15),
+                      width: MediaQuery.of(context).size.width * 0.75,
+                      decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(10)),
+                      child: Center(
+                        child: TextFormField(
+                          maxLines: 1,
                           keyboardType: TextInputType.phone,
                           controller: numeroController,
                           onSaved: (onSavedval) {
@@ -367,16 +409,17 @@ class _NouveauPageState extends State<NouveauPage> {
                     debugPrint("id : $idValue");
                     debugPrint("idlastAnnee : $idAnnee");
 
-                    if (validateAndSave()) {
+                    if (validateAndSave() && idValue != 0) {
                       String date1 = formatDate(date);
-
                       ElevesModel newEleve = ElevesModel(
                           nomEleve: nomController.text.toString(),
                           prenomEleve: prenomController.text.toString(),
                           dateNaissance: date1,
+                          matriculeEleve: matriculeController.text.toString(),
                           phoneParent: numeroController.text.toString());
 
                       bool insert = await Eleve().insertEleve(newEleve);
+                      dialogueNote(context,"Enregistrement en cours");
 
                       if (insert) {
                         String idEleve = await Eleve().lastEleve();
@@ -385,27 +428,37 @@ class _NouveauPageState extends State<NouveauPage> {
                             .insertLien(int.parse(idEleve), idValue, idAnnee);
 
                         if (lien) {
-                          CoolAlert.show(
-                            context: context,
-                            type: CoolAlertType.success,
-                            text: "Enregistrement Effectué avec Success",
-                            loopAnimation: true,
-                            confirmBtnText: 'OK',
-                            barrierDismissible: false,
-                            confirmBtnColor: tealClaire(),
-                            backgroundColor: teal(),
-                            onConfirmBtnTap: () {
-                              Navigator.pop(context);
-                              Navigator.pop(context);
-                            },
-                          );
+                          Timer(const Duration(milliseconds: 2000), () {
+                            CoolAlert.show(
+                              context: context,
+                              type: CoolAlertType.success,
+                              text: "Eleve Enregistré avec Success",
+                              loopAnimation: true,
+                              confirmBtnText: 'OK',
+                              barrierDismissible: false,
+                              confirmBtnColor: tealClaire(),
+                              backgroundColor: teal(),
+                              onConfirmBtnTap: () {
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                              },
+                            );
+                          });
+
                           // DInfo.snackBarSuccess(
                           //     "Enregistrement effecué Avec Success", context);
                         } else {
+                          Navigator.pop(context);
                           DInfo.snackBarError(
                               "Erreur Au Niveau de L'enregistrement !! ",
                               context);
                         }
+                      } else {
+                        Navigator.pop(context);
+                        DInfo.snackBarError(
+                            "Erreur Au Niveau de L'enregistrement !! ",
+                            context);
                       }
                     } else {
                       // DInfo.snackBarError(
@@ -464,4 +517,6 @@ class _NouveauPageState extends State<NouveauPage> {
   //     DInfo.snackBarError("errot", context);
   //   }
   // }
+
+
 }

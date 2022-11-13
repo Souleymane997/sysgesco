@@ -9,7 +9,9 @@ import 'package:sms_advanced/sms_advanced.dart';
 import '../../../functions/colors.dart';
 import '../../../functions/custom_text.dart';
 import '../../../functions/fonctions.dart';
+import '../../../models/config_sms_Model.dart';
 import '../../../models/eleve_model.dart';
+import '../../../services/database.dart';
 
 class SendConvocation extends StatefulWidget {
   const SendConvocation({super.key, required this.eleve, required this.classe});
@@ -26,6 +28,9 @@ class _SendConvocationState extends State<SendConvocation> {
   TextEditingController dateController = TextEditingController();
   TextEditingController timeController = TextEditingController();
 
+  List<SmsModel> feedConfig = [];
+  SmsModel verType = SmsModel(idconfig: 5, poste: "", lycee: "");
+
   TimeOfDay selectedTime = TimeOfDay.now();
   DateTime date = DateTime.now();
 
@@ -35,16 +40,24 @@ class _SendConvocationState extends State<SendConvocation> {
 
   SmsSender sender = SmsSender();
 
-  
+  loadConfig() async {
+    List<SmsModel> result = await AppDatabase.instance.listConfig();
+    setState(() {
+      feedConfig = result;
+      verType = feedConfig.first;
+      debugPrint("Long : ${feedConfig.length}");
+    });
+  }
 
   @override
   void initState() {
+    loadConfig();
     initializeDateFormatting();
     date1 = formatDate(date);
     heure1 = " ${selectedTime.hour} h ${selectedTime.minute} ";
     eleves = widget.eleve;
     convocationModel =
-        " Le Proviseur du lycée Privé Wend Yam convie les Parents de l'élève ${eleves.nomEleve} ${eleves.prenomEleve} a une importante rencontre le $date1 à $heure1 ";
+        " Le ${verType.poste} du ${verType.lycee} convie les Parents de l'élève ${eleves.nomEleve} ${eleves.prenomEleve} a une importante rencontre le $date1 à $heure1 ";
 
     super.initState();
   }
@@ -289,7 +302,7 @@ class _SendConvocationState extends State<SendConvocation> {
                 onPressed: () {
                   setState(() {
                     convocationModel =
-                        " Le Proviseur du lycée Privé Wend Yam convie les Parents de l'élève ${eleves.nomEleve} ${eleves.prenomEleve} a une importante rencontre le $date1 à , $heure1 ";
+                        " Le ${verType.poste} du ${verType.lycee} convie les Parents de l'élève ${eleves.nomEleve} ${eleves.prenomEleve} a une importante rencontre le $date1 à , $heure1 ";
                   });
 
                   SmsMessage message =

@@ -83,5 +83,41 @@ class Enseignant with ChangeNotifier {
     return res;
   }
 
+
+  
+  Future editEns(EnseignantModel ens) async {
+    String lien = await checkLien();
+    final client = http.Client();
+
+    final response = await client.put(
+        Uri.parse("$lien${Config.apiKey}${Config.EditEns}/${ens.idEns}"),
+        body: jsonEncode({
+          "nomEns": ens.nomEns,
+              "prenomEns": ens.prenomEns,
+              "dateNaissance": ens.dateNaissance,
+              "phone": ens.phone
+        }),
+        headers: {
+          'Content-type': 'application/json',
+          'Accept': 'application/json',
+          "Authorization": "Some token"
+        });
+
+    try {
+      notifyListeners();
+      // ignore: unrelated_type_equality_checks
+      if (response.body.contains("true")) {
+        debugPrint("hello true");
+        return true;
+      } else {
+        return false;
+      }
+    } on Exception catch (e) {
+      debugPrint("fectch error $e");
+    }
+    // ignore: unused_catch_clause
+    return res;
+  }
+
   
 }

@@ -6,16 +6,16 @@ import 'package:sysgesco/controllers/trimestre_controller.dart';
 import 'package:sysgesco/models/trimestre_model.dart';
 
 import '../../../controllers/eleve_controller.dart';
+import '../../../controllers/matiere_controller.dart';
 import '../../../functions/colors.dart';
 import '../../../functions/custom_text.dart';
 import '../../../functions/dialoguetoast.dart';
 import '../../../functions/fonctions.dart';
 import '../../../models/eleve_model.dart';
+import '../../../models/matiere_model.dart';
 
 class MoyennePage extends StatefulWidget {
-  const MoyennePage({super.key, required this.matiere});
-
-  final String matiere;
+  const MoyennePage({super.key});
 
   @override
   State<MoyennePage> createState() => _MoyennePageState();
@@ -24,11 +24,17 @@ class MoyennePage extends StatefulWidget {
 class _MoyennePageState extends State<MoyennePage> {
   late Future<List<ElevesModel>> feedEleve;
   List<TrimestreModel> feedTrimestre = [];
+  List<MatiereModel> feedMatiere = [];
 
   int idValue = 0;
   String value = '-- choisir un Trimestre --';
   final listTrimestre = ['-- choisir un Trimestre --'];
   String choixTrimestre = "-- choisir un Trimestre --";
+
+  final listMatiere = ['-- choisir une matière --'];
+  String valueMat = '-- choisir une matière --';
+  String choixMatiere = "-- choisir une matière --";
+  int idValueMat = 0;
 
   int classeID = 0;
   int anneeID = 0;
@@ -37,10 +43,10 @@ class _MoyennePageState extends State<MoyennePage> {
   late SharedPreferences? saveLastAnneeID;
 
   bool loading = false;
-  
 
   loadEleve() {
-    Future<List<ElevesModel>> result = Eleve().listEleve(id1: classeID, id2: anneeID);
+    Future<List<ElevesModel>> result =
+        Eleve().listEleve(id1: classeID, id2: anneeID);
     setState(() {
       feedEleve = result;
     });
@@ -53,7 +59,7 @@ class _MoyennePageState extends State<MoyennePage> {
     anneeID = (saveLastAnneeID!.getInt('lastAnneeID') ?? 0);
     classeID = (saveClasseID!.getInt('classeID') ?? 0);
 
-    Timer(const Duration(milliseconds: 500), () {
+    Timer(const Duration(milliseconds: 1000), () {
       setState(() {
         loading = true;
       });
@@ -71,6 +77,17 @@ class _MoyennePageState extends State<MoyennePage> {
     for (var i = 0; i < feedTrimestre.length; i++) {
       setState(() {
         listTrimestre.add(feedTrimestre[i].libelleTrimestre.toString());
+      });
+    }
+
+    List<MatiereModel> results = await Matiere().listMatiere();
+    setState(() {
+      feedMatiere = results;
+    });
+
+    for (var i = 0; i < feedMatiere.length; i++) {
+      setState(() {
+        listMatiere.add(feedMatiere[i].libelleMatieres.toString());
       });
     }
   }
@@ -113,7 +130,7 @@ class _MoyennePageState extends State<MoyennePage> {
                   height: 15,
                 ),
                 CustomText(
-                  widget.matiere,
+                  choixMatiere,
                   tex: 1.25,
                   color: blanc(),
                   fontWeight: FontWeight.w600,
@@ -242,7 +259,7 @@ class _MoyennePageState extends State<MoyennePage> {
                     children: [
                       Expanded(
                         child: CustomText(
-                          "Choisir un Trimestre ",
+                          "Selectionnez....",
                           color: Colors.teal,
                           fontWeight: FontWeight.bold,
                           tex: TailleText(context).titre,
@@ -265,6 +282,34 @@ class _MoyennePageState extends State<MoyennePage> {
                     ],
                   ),
                   children: [
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    Container(
+                        margin: const EdgeInsets.only(left: 15, right: 15),
+                        padding: const EdgeInsets.only(left: 15),
+                        height: 50,
+                        width: MediaQuery.of(context).size.width * 0.4,
+                        decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(10)),
+                        child: DropdownButton<String>(
+                            underline: Container(),
+                            icon: const Icon(Icons.arrow_drop_down,
+                                color: Colors.blueGrey),
+                            value: valueMat,
+                            isExpanded: true,
+                            items: listMatiere.map(buildMenuItem).toList(),
+                            iconSize: 30,
+                            iconEnabledColor: Colors.blueGrey,
+                            onChanged: ((value) {
+                              stfsetState(() {
+                                valueMat = value!;
+                              });
+                              setState(() {
+                                valueMat = value!;
+                              });
+                            }))),
                     const SizedBox(
                       height: 15,
                     ),
@@ -312,13 +357,17 @@ class _MoyennePageState extends State<MoyennePage> {
                               ),
                             ),
                             onPressed: () {
-                              if (value == listTrimestre[0]) {
+                              if (value == listTrimestre[0] ||
+                                  valueMat == listMatiere[0]) {
                                 DInfo.toastError("Faites un Choix svp !!");
                               } else {
                                 setState(() {
                                   choixTrimestre = value;
+                                  choixMatiere = valueMat;
                                 });
+
                                 searchId();
+
                                 Navigator.of(context).pop();
                               }
                             },
@@ -337,12 +386,21 @@ class _MoyennePageState extends State<MoyennePage> {
   }
 
   callsearchDialogue() {
-    Timer(const Duration(milliseconds: 500), () {
+    Timer(const Duration(milliseconds: 1000), () {
       searchClasse(context);
     });
   }
 
   searchId() {
+
+    for (var i = 0; i < feedMatiere.length; i++) {
+      if (valueMat == feedMatiere[i].libelleMatieres.toString()) {
+        setState(() {
+          idValueMat = int.parse(feedMatiere[i].idMatieres.toString());
+        });
+      }
+    }
+
     for (var i = 0; i < feedTrimestre.length; i++) {
       if (value == feedTrimestre[i].libelleTrimestre.toString()) {
         setState(() {
@@ -351,6 +409,6 @@ class _MoyennePageState extends State<MoyennePage> {
       }
     }
 
-    debugPrint("  trimestre : $idValue ");
+    debugPrint("  trimestre : $idValue , matiere : $idValueMat ");
   }
 }
