@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sysgesco/functions/colors.dart';
 
 import '../../../functions/fonctions.dart';
-import '../../menu/parametres/matiere.dart';
 import 'config_sms.dart';
+import 'rappel.dart';
 
 class ScolaritePage extends StatefulWidget {
   const ScolaritePage({super.key});
@@ -31,8 +31,8 @@ class _ScolaritePageState extends State<ScolaritePage> {
               children: [
                 cardMenuRound("Configuration de la Messagerie", Icons.sms,
                     amberFone(), const ConfigSmsPage(), context),
-                cardMenuRound("Paiement de la Scolarité", Icons.money,
-                    teal(), const MatierePage(), context),
+                cardMenuRound("Rappel de la Scolarité", Icons.money, teal(),
+                    const RappelPage(), context),
               ],
             ),
             Container(

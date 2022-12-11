@@ -33,17 +33,13 @@ class _DetailsElevePageState extends State<DetailsElevePage> {
   List<NoteModel> feed2 = [];
   List<NoteModel> feed3 = [];
 
-  List<String> feedNote1 = [];
-  List<String> feedNote2 = [];
-  List<String> feedNote3 = [];
-
   late SharedPreferences? saveClasseID;
   late SharedPreferences? saveLastAnneeID;
   late SharedPreferences? saveMatiereID;
 
   int countNoteTrimestre1 = 0;
   int countNoteTrimestre2 = 0;
-  int countNoteTrimestre3 = 0;
+  int countNoteTrimestre3 = 0; 
 
   int eleveID = 0;
   int classeID = 0;

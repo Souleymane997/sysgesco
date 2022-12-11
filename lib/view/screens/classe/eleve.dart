@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sysgesco/controllers/eleve_controller.dart';
 
 import '../../../functions/colors.dart';
@@ -36,9 +37,22 @@ class _ViewElevePageState extends State<ViewElevePage> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   bool modify = false;
 
+  late SharedPreferences? saveDataUser;
+
+  int statut = 0;
+
+  void checkUserLogin() async {
+    saveDataUser = await SharedPreferences.getInstance();
+
+    setState(() {
+      statut = saveDataUser!.getInt("role") ?? -1;
+    });
+  }
+
   @override
   void initState() {
     element = widget.eleve;
+    checkUserLogin();
     super.initState();
   }
 
@@ -272,7 +286,7 @@ class _ViewElevePageState extends State<ViewElevePage> {
           icon: Icons.admin_panel_settings,
           backgroundColor: amberFone(),
           children: [
-            SpeedDialChild(
+             SpeedDialChild(
               child: SizedBox(
                   width: 30,
                   height: 20,
@@ -286,7 +300,8 @@ class _ViewElevePageState extends State<ViewElevePage> {
                 dialogEleve(context, element);
               },
             ),
-            SpeedDialChild(
+            (statut == 1 || statut == 0)
+              ? SpeedDialChild(
               child: SizedBox(
                   width: 30,
                   height: 20,
@@ -337,7 +352,7 @@ class _ViewElevePageState extends State<ViewElevePage> {
                   },
                 );
               },
-            ),
+            ) : SpeedDialChild(),
           ]),
     );
   }

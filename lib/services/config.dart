@@ -17,7 +17,6 @@ class Config {
   static const String GetEleve = "/Eleve/getEleve";
   static const String DeleteEleve = "/Eleve/deleteEleve";
 
-
   //*
 
   //* classe
@@ -91,6 +90,24 @@ class Config {
   static const String InsertJour = "/Jour/insertJour";
   static const String EditJour = "/Jour/editJour";
   static const String DeleteJour = "/Jour/deleteJour";
+
+  //*
+
+  //* notes
+
+  static const String GetMoyenne = "/Moyenne/getMoyenne";
+  static const String InsertMoyenne = "/Moyenne/insertMoyenne";
+  static const String EditMoyenne = "/Moyenne/editMoyenne";
+
+  //*
+
+  //* comptes
+
+  static const String GetCompte = "/Compte/getCompte";
+  static const String GetAllCompte = "/Compte/getAllCompte";
+  static const String InsertCompte = "/Compte/insertCompte";
+  static const String EditCompte = "/Compte/editCompte";
+  static const String DeleteCompte = "/Compte/deleteCompte";
 
   //*
 

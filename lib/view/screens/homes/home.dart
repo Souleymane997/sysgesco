@@ -214,7 +214,7 @@ class _HomePageState extends State<HomePage> {
                 )
               ],
             ),
-            drawer: const NavDrawer(choix: 1),
+            drawer: const NavDrawer(),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -668,6 +668,11 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       feedAnnee = result;
     });
+
+    if (listAnnee.length > 1) {
+      listAnnee.clear();
+      listAnnee.add('-- choisir une annee --');
+    }
 
     for (var i = 0; i < feedAnnee.length; i++) {
       setState(() {

@@ -160,6 +160,18 @@ class _DetailsEnseignantsState extends State<DetailsEnseignants> {
     });
   }
 
+  late SharedPreferences? saveDataUser;
+
+  int statut = 0;
+
+  void checkUserLogin() async {
+    saveDataUser = await SharedPreferences.getInstance();
+
+    setState(() {
+      statut = saveDataUser!.getInt("role") ?? -1;
+    });
+  }
+
   void checkID() async {
     loadClasse();
     saveLastAnneeID = await SharedPreferences.getInstance();
@@ -186,6 +198,7 @@ class _DetailsEnseignantsState extends State<DetailsEnseignants> {
       profID = int.parse(enseig.idEns.toString());
     });
 
+    checkUserLogin();
     checkID();
     super.initState();
   }

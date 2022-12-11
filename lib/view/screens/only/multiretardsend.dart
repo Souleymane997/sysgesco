@@ -129,45 +129,7 @@ class _SendRetardListState extends State<SendRetardList> {
                   borderRadius: BorderRadius.circular(10.0),
                 ),
               ),
-              onPressed: () {
-                for (var i = 0; i < ListEleves.length; i++) {
-                  setState(() {
-                    absenceModel =
-                        '''** ${verType.lycee} **\n\nL'élève "${ListEleves[i].nomEleve} ${ListEleves[i].prenomEleve}" en classe de  "${widget.classe}" est absent ce jour $date1''';
-
-                    retardModel =
-                        '''** ${verType.lycee} **\n\nL'élève "${ListEleves[i].nomEleve} ${ListEleves[i].prenomEleve}" en classe de  "${widget.classe}" est en retard aux cours $date1 ''';
-                  });
-                  SmsMessage message = SmsMessage(ListEleves[i].phoneParent,
-                      (!choix) ? retardModel : absenceModel);
-
-                  message.onStateChanged.listen((state) {
-                    if (state == SmsMessageState.Sent) {
-                      debugPrint("SMS is sent!");
-                    } else if (state == SmsMessageState.Delivered) {
-                      debugPrint("SMS is delivered!");
-                    }
-                  });
-                  sender.sendSms(message);
-                }
-
-                Timer(const Duration(milliseconds: 500), () {
-                  CoolAlert.show(
-                    context: context,
-                    type: CoolAlertType.success,
-                    text: "Message Envoyé avec Success",
-                    loopAnimation: true,
-                    confirmBtnText: 'OK',
-                    barrierDismissible: false,
-                    confirmBtnColor: tealClaire(),
-                    backgroundColor: teal(),
-                    onConfirmBtnTap: () {
-                      Navigator.pop(context);
-                      Navigator.pop(context);
-                    },
-                  );
-                });
-              },
+              onPressed: () {},
               child: CustomText("Envoyer",
                   color: Colors.white, tex: TailleText(context).soustitre)),
           Container(
@@ -208,5 +170,63 @@ class _SendRetardListState extends State<SendRetardList> {
             ),
           );
         });
+  }
+
+  confirm() {
+    CoolAlert.show(
+      context: context,
+      type: CoolAlertType.confirm,
+      title: "ENVOI DE MESSAGE",
+      text: "Etes vous sur de vouloir envoyer ces messages?",
+      loopAnimation: true,
+      confirmBtnText: 'OUI',
+      cancelBtnText: 'NON',
+      barrierDismissible: false,
+      confirmBtnColor: bleu(),
+      backgroundColor: bleu(),
+      onConfirmBtnTap: () async {
+        Navigator.pop(context);
+        for (var i = 0; i < ListEleves.length; i++) {
+          setState(() {
+            absenceModel =
+                '''** ${verType.lycee} **\n\nL'élève "${ListEleves[i].nomEleve} ${ListEleves[i].prenomEleve}" en classe de  "${widget.classe}" est absent ce jour $date1''';
+
+            retardModel =
+                '''** ${verType.lycee} **\n\nL'élève "${ListEleves[i].nomEleve} ${ListEleves[i].prenomEleve}" en classe de  "${widget.classe}" est en retard aux cours $date1 ''';
+          });
+          SmsMessage message = SmsMessage(
+              ListEleves[i].phoneParent, (!choix) ? retardModel : absenceModel);
+
+          message.onStateChanged.listen((state) {
+            if (state == SmsMessageState.Sent) {
+              debugPrint("SMS is sent!");
+            } else if (state == SmsMessageState.Delivered) {
+              debugPrint("SMS is delivered!");
+            }
+          });
+          sender.sendSms(message);
+        }
+
+        Timer(const Duration(milliseconds: 500), () {
+          CoolAlert.show(
+            context: context,
+            type: CoolAlertType.success,
+            text: "Message Envoyé avec Success",
+            loopAnimation: true,
+            confirmBtnText: 'OK',
+            barrierDismissible: false,
+            confirmBtnColor: tealClaire(),
+            backgroundColor: teal(),
+            onConfirmBtnTap: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+          );
+        });
+      },
+      onCancelBtnTap: () {
+        Navigator.pop(context);
+      },
+    );
   }
 }

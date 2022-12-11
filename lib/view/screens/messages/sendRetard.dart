@@ -32,9 +32,11 @@ class _SendRetardState extends State<SendRetard> {
   SmsSender sender = SmsSender();
   SmsModel verType = SmsModel(idconfig: 5, poste: "", lycee: "");
 
+  TextEditingController motifController = TextEditingController();
+  bool checkMotif = false;
+
   String absenceModel = "";
   String retardModel = "";
-
   loadConfig() async {
     List<SmsModel> result = await AppDatabase.instance.listConfig();
     setState(() {
@@ -82,7 +84,7 @@ class _SendRetardState extends State<SendRetard> {
                 CustomText(
                   " ${eleves.nomEleve}  ${eleves.prenomEleve} ",
                   tex: 1.25,
-                  color: grisee(),
+                  color: blanc(),
                   fontWeight: FontWeight.w600,
                 ),
                 Container(
@@ -175,6 +177,69 @@ class _SendRetardState extends State<SendRetard> {
               ),
             ),
             Container(
+              height: 25,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CustomText(
+                  "Cocher pour ajouter un Motif ? ",
+                  color: noir(),
+                  fontWeight: FontWeight.w700,
+                  tex: 1.1,
+                ),
+                Checkbox(
+                  value: checkMotif,
+                  onChanged: (value) {
+                    setState(() {
+                      checkMotif = value!;
+                    });
+                  },
+                ),
+              ],
+            ),
+            Container(
+              height: 20,
+            ),
+            (checkMotif)
+                ? Container(
+                    margin: const EdgeInsets.only(left: 15, right: 15),
+                    width: MediaQuery.of(context).size.width * 0.85,
+                    decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(10)),
+                    child: Center(
+                      child: TextFormField(
+                        maxLines: 2,
+                        controller: motifController,
+                        onSaved: (onSavedval) {
+                          motifController.text = onSavedval!;
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return " entrer un Motif svp !! ";
+                          }
+                          return null;
+                        },
+                        decoration: const InputDecoration(
+                          labelText: "Motif ",
+                          hintText: "Motif ",
+                          focusedBorder: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Colors.teal, width: 1),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10.0))),
+                          border: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Colors.teal, width: 0),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10.0))),
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(),
+            Container(
               height: 50,
             ),
             ElevatedButton(
@@ -190,37 +255,63 @@ class _SendRetardState extends State<SendRetard> {
                   ),
                 ),
                 onPressed: () {
-                  SmsMessage message = SmsMessage(eleves.phoneParent,
-                      (!choix) ? retardModel : absenceModel);
-
-                  message.onStateChanged.listen((state) {
-                    if (state == SmsMessageState.Sent) {
-                      debugPrint("SMS is sent!");
-                    } else if (state == SmsMessageState.Delivered) {
-                      debugPrint("SMS is delivered!");
-                    }
-                  });
-                  sender.sendSms(message);
-                  CoolAlert.show(
-                    context: context,
-                    type: CoolAlertType.success,
-                    text: "Message Envoyé avec Success",
-                    loopAnimation: true,
-                    confirmBtnText: 'OK',
-                    barrierDismissible: false,
-                    confirmBtnColor: tealClaire(),
-                    backgroundColor: teal(),
-                    onConfirmBtnTap: () {
-                      Navigator.pop(context);
-                      Navigator.pop(context);
-                    },
-                  );
+                  confirm();
                 },
                 child: CustomText("Envoyer",
                     color: Colors.white, tex: TailleText(context).soustitre)),
           ]),
         ),
       ),
+    );
+  }
+
+  confirm() {
+    CoolAlert.show(
+      context: context,
+      type: CoolAlertType.confirm,
+      title: "ENVOI DE MESSAGE",
+      text: "Etes vous sur de vouloir envoyer ce message?",
+      loopAnimation: true,
+      confirmBtnText: 'OUI',
+      cancelBtnText: 'NON',
+      barrierDismissible: false,
+      confirmBtnColor: bleu(),
+      backgroundColor: bleu(),
+      onConfirmBtnTap: () async {
+        Navigator.pop(context);
+        SmsMessage message = SmsMessage(
+            eleves.phoneParent,
+            (!choix)
+                ? "$retardModel" "${motifController.text.toString()}"
+                : "$absenceModel"
+                    "${motifController.text.toString()}");
+
+        message.onStateChanged.listen((state) {
+          if (state == SmsMessageState.Sent) {
+            debugPrint("SMS is sent!");
+          } else if (state == SmsMessageState.Delivered) {
+            debugPrint("SMS is delivered!");
+          }
+        });
+        sender.sendSms(message);
+        CoolAlert.show(
+          context: context,
+          type: CoolAlertType.success,
+          text: "Message Envoyé avec Success",
+          loopAnimation: true,
+          confirmBtnText: 'OK',
+          barrierDismissible: false,
+          confirmBtnColor: tealClaire(),
+          backgroundColor: teal(),
+          onConfirmBtnTap: () {
+            Navigator.pop(context);
+            Navigator.pop(context);
+          },
+        );
+      },
+      onCancelBtnTap: () {
+        Navigator.pop(context);
+      },
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sysgesco/view/screens/homes/home.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
 import '../../../functions/custom_text.dart';
 import '../../../models/http.dart';
@@ -18,6 +19,9 @@ class _LaunchState extends State<Launch> {
   late SharedPreferences? saveLienHttp;
   late List<HttpModel> feedHtpp;
 
+  late SharedPreferences loginData;
+  late bool newUser;
+
   void checkLastAnneID() async {
     saveLienHttp = await SharedPreferences.getInstance();
     feedHtpp = await AppDatabase.instance.listHttp();
@@ -30,19 +34,37 @@ class _LaunchState extends State<Launch> {
     debugPrint("lien Http : $chaine");
   }
 
+  void checkUserLogin() async {
+    loginData = await SharedPreferences.getInstance();
+    newUser = (loginData.getBool('login') ?? true);
+    debugPrint(newUser.toString());
+    Timer(const Duration(seconds: 1), () {
+      checkLogin();
+    });
+  }
+
   void checkLogin() async {
-    Timer(
-        const Duration(seconds: 3),
-        () => {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()))
-            });
+    if (newUser) {
+      Timer(
+          const Duration(seconds: 3),
+          () => {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()))
+              });
+    } else {
+      Timer(
+          const Duration(seconds: 3),
+          () => {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const HomePage()))
+              });
+    }
   }
 
   @override
   void initState() {
     checkLastAnneID();
-    checkLogin();
+    checkUserLogin();
     super.initState();
   }
 

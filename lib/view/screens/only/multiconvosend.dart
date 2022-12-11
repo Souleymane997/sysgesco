@@ -255,42 +255,7 @@ class _SendConvocationListState extends State<SendConvocationList> {
                 ),
               ),
               onPressed: () {
-                for (var i = 0; i < eleves.length; i++) {
-                  setState(() {
-                    convocationModel =
-                        "${verType.poste} du ${verType.lycee} convie les Parents de l'élève ${eleves[i].nomEleve} ${eleves[i].prenomEleve} a une importante rencontre le $date1 à $heure1 ";
-                  });
-
-                  SmsMessage message =
-                      SmsMessage(eleves[i].phoneParent, convocationModel);
-                  debugPrint(convocationModel);
-
-                  message.onStateChanged.listen((state) {
-                    if (state == SmsMessageState.Sent) {
-                      debugPrint("SMS is sent!");
-                    } else if (state == SmsMessageState.Delivered) {
-                      debugPrint("SMS is delivered!");
-                    }
-                  });
-                  sender.sendSms(message);
-                }
-
-                Timer(const Duration(milliseconds: 500), () {
-                  CoolAlert.show(
-                    context: context,
-                    type: CoolAlertType.success,
-                    text: "Message Envoyé avec Success",
-                    loopAnimation: true,
-                    confirmBtnText: 'OK',
-                    barrierDismissible: false,
-                    confirmBtnColor: tealClaire(),
-                    backgroundColor: teal(),
-                    onConfirmBtnTap: () {
-                      Navigator.pop(context);
-                      Navigator.pop(context);
-                    },
-                  );
-                });
+                confirm();
               },
               child: CustomText("Envoyer",
                   color: Colors.white, tex: TailleText(context).soustitre)),
@@ -332,5 +297,63 @@ class _SendConvocationListState extends State<SendConvocationList> {
             ),
           );
         });
+  }
+
+  confirm() {
+    CoolAlert.show(
+      context: context,
+      type: CoolAlertType.confirm,
+      title: "ENVOI DE MESSAGE",
+      text: "Etes vous sur de vouloir envoyer ces messages?",
+      loopAnimation: true,
+      confirmBtnText: 'OUI',
+      cancelBtnText: 'NON',
+      barrierDismissible: false,
+      confirmBtnColor: bleu(),
+      backgroundColor: bleu(),
+      onConfirmBtnTap: () async {
+        Navigator.pop(context);
+
+        for (var i = 0; i < eleves.length; i++) {
+          setState(() {
+            convocationModel =
+                "${verType.poste} du ${verType.lycee} convie les Parents de l'élève ${eleves[i].nomEleve} ${eleves[i].prenomEleve} a une importante rencontre le $date1 à $heure1 ";
+          });
+
+          SmsMessage message =
+              SmsMessage(eleves[i].phoneParent, convocationModel);
+          debugPrint(convocationModel);
+
+          message.onStateChanged.listen((state) {
+            if (state == SmsMessageState.Sent) {
+              debugPrint("SMS is sent!");
+            } else if (state == SmsMessageState.Delivered) {
+              debugPrint("SMS is delivered!");
+            }
+          });
+          sender.sendSms(message);
+        }
+
+        Timer(const Duration(milliseconds: 500), () {
+          CoolAlert.show(
+            context: context,
+            type: CoolAlertType.success,
+            text: "Message Envoyé avec Success",
+            loopAnimation: true,
+            confirmBtnText: 'OK',
+            barrierDismissible: false,
+            confirmBtnColor: tealClaire(),
+            backgroundColor: teal(),
+            onConfirmBtnTap: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+          );
+        });
+      },
+      onCancelBtnTap: () {
+        Navigator.pop(context);
+      },
+    );
   }
 }

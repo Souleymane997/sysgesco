@@ -1,4 +1,4 @@
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
 
 import 'dart:async';
 import 'package:cool_alert/cool_alert.dart';
@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sysgesco/controllers/eleve_controller.dart';
 import 'package:sysgesco/controllers/matiere_controller.dart';
-import 'package:sysgesco/view/screens/classe/detailsEleve.dart';
 import '../../../controllers/note_controller.dart';
 import '../../../controllers/trimestre_controller.dart';
 import '../../../functions/colors.dart';
@@ -14,7 +13,6 @@ import '../../../functions/custom_text.dart';
 import '../../../functions/dialoguetoast.dart';
 import '../../../functions/fonctions.dart';
 
-import '../../../functions/slidepage.dart';
 import '../../../models/eleve_model.dart';
 import '../../../models/matiere_model.dart';
 import '../../../models/trimestre_model.dart';
@@ -154,18 +152,6 @@ class _ListingPageState extends State<ListingPage> {
                 },
                 icon: const Icon(Icons.filter_center_focus)),
             Container(
-              width: 15,
-            ),
-            IconButton(
-              icon: const Icon(
-                Icons.search,
-              ),
-              onPressed: () {
-                debugPrint("hello");
-                //searchDialogue();
-              },
-            ),
-            Container(
               width: 5,
             )
           ],
@@ -291,7 +277,7 @@ class _ListingPageState extends State<ListingPage> {
             }
 
             if (pass) {
-              dialogueNote();
+              dialogueNote(context, "enregistrement en cours..");
               Timer(const Duration(milliseconds: 2000), () {
                 CoolAlert.show(
                   context: context,
@@ -625,18 +611,6 @@ class _ListingPageState extends State<ListingPage> {
         padding: const EdgeInsets.only(left: 0.5, right: 0.5),
         child: ListTile(
           onTap: () {
-            Navigator.of(context).push(
-              SlideRightRoute(
-                  child: DetailsElevePage(
-                    eleve: eleve,
-                    matiere: choixMatiere,
-                  ),
-                  page: DetailsElevePage(
-                    eleve: eleve,
-                    matiere: choixMatiere,
-                  ),
-                  direction: AxisDirection.left),
-            );
           },
           title: Row(
             children: [
@@ -666,38 +640,5 @@ class _ListingPageState extends State<ListingPage> {
         ),
       ),
     );
-  }
-
-  Future<void> dialogueNote() async {
-    return await showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (dialogcontext) => StatefulBuilder(
-            builder: (stfContext, stfsetState) => SimpleDialog(
-                  shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(20.0))),
-                  contentPadding: const EdgeInsets.only(top: 2.0),
-                  backgroundColor: Colors.white,
-                  children: [
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Center(
-                      child: CircularProgressIndicator(
-                        color: teal(),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    CustomText(
-                      "Patientez svp ... envoi en cours ",
-                      color: teal(),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                  ],
-                )));
   }
 }

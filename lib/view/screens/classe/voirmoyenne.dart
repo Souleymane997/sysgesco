@@ -1,8 +1,6 @@
-// ignore_for_file: non_constant_identifier_names, use_build_context_synchronously
+// ignore_for_file: non_constant_identifier_names
 
 import 'dart:async';
-
-import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sysgesco/controllers/moyenne_controller.dart';
@@ -18,19 +16,18 @@ import '../../../functions/fonctions.dart';
 import '../../../models/eleve_model.dart';
 import '../../../models/matiere_model.dart';
 
-class MoyennePage extends StatefulWidget {
-  const MoyennePage({super.key});
+class VoirMoyennePage extends StatefulWidget {
+  const VoirMoyennePage({super.key});
 
   @override
-  State<MoyennePage> createState() => _MoyennePageState();
+  State<VoirMoyennePage> createState() => _VoirMoyennePageState();
 }
 
-class _MoyennePageState extends State<MoyennePage> {
+class _VoirMoyennePageState extends State<VoirMoyennePage> {
   late Future<List<ElevesModel>> feedEleve;
   List<TrimestreModel> feedTrimestre = [];
   List<MatiereModel> feedMatiere = [];
   List<ElevesModel> listEleve = [];
-  List<TextEditingController> editController = [];
 
   int idValue = 0;
   String value = '-- choisir un Trimestre --';
@@ -45,28 +42,62 @@ class _MoyennePageState extends State<MoyennePage> {
   int classeID = 0;
   int anneeID = 0;
 
+  List<String> listMoyenne = [];
+
   late SharedPreferences? saveClasseID;
   late SharedPreferences? saveLastAnneeID;
 
   bool loading = false;
+  int longueur = 0;
+
+  loadData() async {
+    Future<List<ElevesModel>> result =
+        Eleve().listEleve(id1: classeID, id2: anneeID);
+    listEleve = await result;
+    setState(() {
+      longueur = listEleve.length;
+    });
+
+    for (var i = 0; i < listEleve.length; i++) {
+      listEleve = await result;
+      debugPrint(listEleve.length.toString());
+
+      String? moyenne = await Moyenne().moyenneEleve(
+          idEleve: int.parse(listEleve[i].idEleve.toString()),
+          idTri: idValue,
+          idMat: idValueMat,
+          idAnnee: anneeID,
+          idClasse: classeID);
+
+      setState(() {
+        listMoyenne.add(moyenne!);
+        debugPrint(listMoyenne[i]);
+      });
+
+      if (i == (longueur - 1)) {
+        Timer(const Duration(seconds: 5), () {
+          loadEleve();
+          setState(() {
+            loading = true;
+          });
+          debugPrint(loading.toString());
+
+          setState(() {
+            if (loading) {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            }
+          });
+        });
+      }
+    }
+  }
 
   loadEleve() async {
     Future<List<ElevesModel>> result =
         Eleve().listEleve(id1: classeID, id2: anneeID);
     setState(() {
       feedEleve = result;
-    });
-
-    listEleve = await result;
-    debugPrint(listEleve.length.toString());
-
-    editController.clear();
-
-    setState(() {
-      for (var i = 0; i < listEleve.length; i++) {
-        editController.add(TextEditingController());
-      }
-      debugPrint(editController.length.toString());
     });
   }
 
@@ -121,144 +152,72 @@ class _MoyennePageState extends State<MoyennePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Moyenne"),
-          actions: [
-            Row(
-              children: [
-                IconButton(
-                    onPressed: () {
-                      searchClasse(context);
-                    },
-                    icon: const Icon(Icons.filter_center_focus)),
+      appBar: AppBar(
+        title: const Text("Voir Moyenne"),
+        actions: [
+          Row(
+            children: [
+              IconButton(
+                  onPressed: () {
+                    searchClasse(context);
+                  },
+                  icon: const Icon(Icons.filter_center_focus)),
+              Container(
+                width: 20,
+              ),
+            ],
+          )
+        ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              color: Colors.grey.shade400,
+              child: Column(children: [
                 Container(
-                  width: 20,
+                  height: 15,
                 ),
-              ],
-            )
+                CustomText(
+                  choixMatiere,
+                  tex: 1.25,
+                  color: blanc(),
+                  fontWeight: FontWeight.w600,
+                ),
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                    ),
+                    Expanded(
+                      child: Divider(
+                        color: gris(),
+                      ),
+                    ),
+                    Container(
+                      width: 40,
+                    ),
+                  ],
+                ),
+                CustomText(
+                  " $choixTrimestre ",
+                  tex: 0.85,
+                  color: gris(),
+                  fontWeight: FontWeight.w600,
+                ),
+                Container(
+                  height: 15,
+                ),
+              ]),
+            ),
+            Container(
+              height: 5,
+            ),
+            Expanded(child: (loading) ? elemntInList() : pageLoading(context)),
           ],
         ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              Container(
-                color: Colors.grey.shade400,
-                child: Column(children: [
-                  Container(
-                    height: 15,
-                  ),
-                  CustomText(
-                    choixMatiere,
-                    tex: 1.25,
-                    color: blanc(),
-                    fontWeight: FontWeight.w600,
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                      ),
-                      Expanded(
-                        child: Divider(
-                          color: gris(),
-                        ),
-                      ),
-                      Container(
-                        width: 40,
-                      ),
-                    ],
-                  ),
-                  CustomText(
-                    " $choixTrimestre ",
-                    tex: 0.85,
-                    color: gris(),
-                    fontWeight: FontWeight.w600,
-                  ),
-                  Container(
-                    height: 15,
-                  ),
-                ]),
-              ),
-              Container(
-                height: 5,
-              ),
-              Expanded(
-                  child: (loading) ? elemntInList() : pageLoading(context)),
-            ],
-          ),
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () async {
-            debugPrint(editController.length.toString());
-            bool pass = true;
-            int forget = 0;
-
-            for (var i = 0; i < editController.length; i++) {
-              if (editController[i].text.isEmpty) {
-                setState(() {
-                  pass = false;
-                  forget++;
-                });
-              }
-            }
-
-            if (pass) {
-              for (var i = 0; i < editController.length; i++) {
-                debugPrint(editController[i].text);
-                int id = int.parse(listEleve[i].idEleve ?? "0");
-
-                if (editController[i].text.isNotEmpty) {
-                  await Moyenne().insertMoyenne(
-                      editController[i].text.toString(),
-                      id,
-                      anneeID,
-                      classeID,
-                      idValue,
-                      idValueMat
-                      );
-                }
-              }
-            } else {
-              DInfo.toastError(
-                  " Oupps!!!! vous avez oublié de remplir $forget note(s) !!");
-              setState(() {
-                forget = 0;
-              });
-            }
-
-            if (pass) {
-              dialogueNote(context, "enregistrement en cours..");
-              Timer(const Duration(milliseconds: 2000), () {
-                CoolAlert.show(
-                  context: context,
-                  type: CoolAlertType.success,
-                  title: "Insertion de Moyenne",
-                  text: "Enregistrement Effectué avec Success",
-                  loopAnimation: true,
-                  confirmBtnText: 'OK',
-                  barrierDismissible: false,
-                  confirmBtnColor: tealClaire(),
-                  backgroundColor: teal(),
-                  onConfirmBtnTap: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                );
-              });
-            }
-          },
-          elevation: 10.0,
-          backgroundColor: amberFone(),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          label: CustomText(
-            "enregistrer",
-            fontWeight: FontWeight.w600,
-          ),
-          icon: const Icon(Icons.save),
-        ));
+      ),
+    );
   }
 
   Widget elemntInList() {
@@ -282,42 +241,55 @@ class _MoyennePageState extends State<MoyennePage> {
               itemCount: data!.length,
               itemBuilder: (context, index) {
                 ElevesModel item = data[index];
-                return CardEleveNote(item, editController[index]);
+                return cardWidget(item, listMoyenne[index]);
               });
         });
   }
 
-  CardEleveNote(ElevesModel eleve, TextEditingController controller) {
+  Widget cardWidget(ElevesModel element, String moy) {
     return Card(
       margin: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
       child: Container(
-        color: Colors.transparent,
         padding: const EdgeInsets.only(left: 0.5, right: 0.5),
+        color: Colors.transparent,
         child: ListTile(
           onTap: () {},
           title: Row(
             children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(3.0),
-                  child: CustomText(
-                    "${eleve.nomEleve}  ${eleve.prenomEleve}",
-                    tex: TailleText(context).soustitre * 0.8,
-                    color: noir(),
-                    textAlign: TextAlign.left,
-                    fontWeight: FontWeight.w600,
-                  ),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.4,
+                padding: const EdgeInsets.all(5.0),
+                child: CustomText(
+                  "${element.nomEleve}  ${element.prenomEleve}",
+                  tex: TailleText(context).soustitre * 0.8,
+                  color: noir(),
+                  textAlign: TextAlign.left,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+              Container(
+                width: 10,
+              ),
               Expanded(
-                  child: Container(
-                      color: teal().withOpacity(0.3),
-                      child: TextField(
-                        maxLines: 1,
-                        textAlign: TextAlign.center,
-                        keyboardType: TextInputType.number,
-                        controller: controller,
-                      )))
+                child: Container(
+                    margin: const EdgeInsets.all(3),
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: amberFone().withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: amberFone(),
+                        width: 2.0,
+                      ),
+                    ),
+                    child: CustomText(
+                      (moy.isNotEmpty) ? moy : "00",
+                      tex: TailleText(context).soustitre * 0.8,
+                      color: teal(),
+                      textAlign: TextAlign.center,
+                      fontWeight: FontWeight.w600,
+                    )),
+              ),
             ],
           ),
         ),
@@ -447,13 +419,10 @@ class _MoyennePageState extends State<MoyennePage> {
                                   choixMatiere = valueMat;
                                 });
                                 searchId();
+                                dialogueNote(context, "patientez svp...");
 
-                                Timer(const Duration(milliseconds: 1000), () {
-                                  setState(() {
-                                    loading = true;
-                                  });
-                                  loadEleve();
-                                  Navigator.of(context).pop();
+                                Timer(const Duration(milliseconds: 500), () {
+                                  loadData();
                                 });
                               }
                             },

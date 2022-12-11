@@ -245,27 +245,7 @@ class _SendNotePageListState extends State<SendNotePageList> {
                       ),
                     ),
                     onPressed: () {
-                      dialogueNote();
-                      envoiNotes();
-
-                      //sender.sendSms(message);
-                      Timer(const Duration(milliseconds: 2000), () {
-                        CoolAlert.show(
-                          context: context,
-                          type: CoolAlertType.success,
-                          text: "Message Envoyé avec Success",
-                          loopAnimation: true,
-                          confirmBtnText: 'OK',
-                          barrierDismissible: false,
-                          confirmBtnColor: tealClaire(),
-                          backgroundColor: teal(),
-                          onConfirmBtnTap: () {
-                            Navigator.pop(context);
-                            Navigator.pop(context);
-                            Navigator.pop(context);
-                          },
-                        );
-                      });
+                      confirm();
                     },
                     child: CustomText("Envoyer",
                         color: Colors.white,
@@ -291,7 +271,7 @@ class _SendNotePageListState extends State<SendNotePageList> {
       a = convert(a);
 
       textMessage = (a.length < 3)
-          ? '''L'élève ${listEleves[i].prenomEleve} a eu $a à la note $noteID de $choixMatiere au trimestre $trimestreID'''
+          ? '''L'élève ${listEleves[i].prenomEleve} a eu $a à la note N°$noteID de $choixMatiere au trimestre $trimestreID'''
           : '''L'élève ${listEleves[i].prenomEleve} n'a pas eu de note $noteID de $choixMatiere au trimestre $trimestreID''';
 
       debugPrint(textMessage);
@@ -357,7 +337,6 @@ class _SendNotePageListState extends State<SendNotePageList> {
                   ],
                 )));
   }
-
 
   /* boite de Dialogue de Classe  */
   Future<void> searchClasse() async {
@@ -608,5 +587,47 @@ class _SendNotePageListState extends State<SendNotePageList> {
             ),
           );
         });
+  }
+
+  confirm() {
+    CoolAlert.show(
+      context: context,
+      type: CoolAlertType.confirm,
+      title: "ENVOI DE MESSAGE",
+      text: "Etes vous sur de vouloir envoyer ces messages?",
+      loopAnimation: true,
+      confirmBtnText: 'OUI',
+      cancelBtnText: 'NON',
+      barrierDismissible: false,
+      confirmBtnColor: bleu(),
+      backgroundColor: bleu(),
+      onConfirmBtnTap: () async {
+        Navigator.pop(context);
+        dialogueNote();
+        envoiNotes();
+
+        //sender.sendSms(message);
+        Timer(const Duration(milliseconds: 2000), () {
+          CoolAlert.show(
+            context: context,
+            type: CoolAlertType.success,
+            text: "Message Envoyé avec Success",
+            loopAnimation: true,
+            confirmBtnText: 'OK',
+            barrierDismissible: false,
+            confirmBtnColor: tealClaire(),
+            backgroundColor: teal(),
+            onConfirmBtnTap: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+          );
+        });
+      },
+      onCancelBtnTap: () {
+        Navigator.pop(context);
+      },
+    );
   }
 }

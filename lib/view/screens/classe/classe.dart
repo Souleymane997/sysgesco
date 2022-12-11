@@ -1,20 +1,24 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:sysgesco/view/screens/classe/statistiques.dart';
+import 'package:sysgesco/view/screens/classe/voirnotes.dart';
 
 import '../../../controllers/classe_controller.dart';
+import '../../../controllers/eleve_controller.dart';
 import '../../../functions/colors.dart';
 import '../../../functions/custom_text.dart';
 import '../../../functions/dialoguetoast.dart';
 import '../../../functions/fonctions.dart';
 import '../../../functions/slidepage.dart';
 import '../../../models/classe_model.dart';
+import '../../../models/eleve_model.dart';
 import 'liste.dart';
 import 'listing.dart';
 import 'moyenne.dart';
+import 'voirmoyenne.dart';
 
 class VoirPlusPage extends StatefulWidget {
   const VoirPlusPage({super.key, required this.choix, required this.classe});
@@ -29,16 +33,19 @@ class VoirPlusPage extends StatefulWidget {
 class _VoirPlusPageState extends State<VoirPlusPage> {
   List<ClasseModel> feedClasse = [];
   late SharedPreferences? saveClasseID;
-
+  late SharedPreferences? saveLastAnneeID;
+  List<ElevesModel> listEleve = [];
   final listClasse = ['-- choisir une classe --'];
   String value = '-- choisir une classe --';
   int idValue = 0;
   String choixClasse = "-- choisir une classe --";
-
+  int anneeID = 0;
+  int classeID = 0;
   String mat = '-- choisir une matière --';
 
   int choix = 0;
   bool loading = false;
+  int longueur = 0;
 
   loadClasse() async {
     List<ClasseModel> result = await Classe().listClasse();
@@ -56,15 +63,27 @@ class _VoirPlusPageState extends State<VoirPlusPage> {
   void checkClasseID() async {
     loadClasse();
     saveClasseID = await SharedPreferences.getInstance();
+    saveLastAnneeID = await SharedPreferences.getInstance();
     int newInt = (saveClasseID!.getInt('classeID') ?? 0);
 
     if (choix == 1) {
       setState(() {
+        anneeID = (saveLastAnneeID!.getInt('lastAnneeID') ?? 0);
         saveClasseID!
             .setInt('classeID', int.parse(widget.classe.idClasse.toString()));
         newInt = (saveClasseID!.getInt('classeID') ?? 0);
       });
+
+      Timer(const Duration(milliseconds: 200), () async {
+        Future<List<ElevesModel>> result =
+            Eleve().listEleve(id1: newInt, id2: anneeID);
+        listEleve = await result;
+        setState(() {
+          longueur = listEleve.length;
+        });
+      });
     }
+
     debugPrint("idClasse hhhh: $newInt");
   }
 
@@ -72,7 +91,7 @@ class _VoirPlusPageState extends State<VoirPlusPage> {
   void initState() {
     choix = widget.choix;
 
-    Timer(const Duration(milliseconds: 200), () {
+    Timer(const Duration(milliseconds: 100), () {
       checkClasseID();
     });
 
@@ -193,21 +212,24 @@ class _VoirPlusPageState extends State<VoirPlusPage> {
                     color: amberFone(),
                     fontWeight: FontWeight.w600,
                   ),
+                  Container(
+                    height: 15,
+                  ),
                   // Container(
                   //   height: 3,
                   // ),
-                  // CustomText(
-                  //   "Matière :   $mat",
-                  //   color: noir(),
-                  //   fontWeight: FontWeight.w600,
-                  // )
+                  CustomText(
+                    " Effectif   :                $longueur  ",
+                    color: noir(),
+                    fontWeight: FontWeight.w600,
+                  )
                 ],
               ),
               Container(
-                height: 50,
+                height: 40,
               ),
               Container(
-                margin: const EdgeInsets.only(left: 35, right: 35, top: 10),
+                margin: const EdgeInsets.only(left: 15, right: 15, top: 10),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -215,7 +237,7 @@ class _VoirPlusPageState extends State<VoirPlusPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         classButton(
-                            "Liste",
+                            "Liste des Eleves",
                             Icons.library_books,
                             Colors.teal,
                             ListeElevePage(
@@ -229,20 +251,29 @@ class _VoirPlusPageState extends State<VoirPlusPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        classButton("Notes", Icons.import_contacts, Colors.teal,
+                        classButton(
+                            "Saisir Notes",
+                            Icons.import_contacts,
+                            Colors.teal,
                             ListingPage(matiere: mat, classe: value)),
-                        classButton("Statistiques", Icons.trending_up,
-                            Colors.teal, const Statistiques()),
+                        classButton(
+                          "Voir Notes",
+                          Icons.visibility,
+                          Colors.teal,
+                          VoirNotes(matiere: mat, classe: value),
+                        ),
                       ],
                     ),
                     Container(
                       height: 25,
                     ),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         classButton("Moyennes", Icons.equalizer,
                             Colors.amber.shade700, const MoyennePage()),
+                        classButton("Moyennes", Icons.visibility,
+                            Colors.amber.shade700, const VoirMoyennePage()),
                       ],
                     ),
                   ],
@@ -285,9 +316,6 @@ class _VoirPlusPageState extends State<VoirPlusPage> {
 
   callsearchDialogue() {
     Timer(const Duration(milliseconds: 2000), () {
-      setState(() {
-        loading = true;
-      });
       searchClasse(context);
     });
   }
@@ -376,15 +404,16 @@ class _VoirPlusPageState extends State<VoirPlusPage> {
                                 borderRadius: BorderRadius.circular(12.0),
                               ),
                             ),
-                            onPressed: () {
+                            onPressed: () async {
                               if (value == listClasse[0]) {
                                 DInfo.toastError("Faites des Choix svp !!");
                               } else {
-                                setState(() {
-                                  choixClasse = value;
-                                });
                                 Navigator.of(context).pop();
-                                searchId();
+                                dialogueNote(context, "chargement en cours ...");
+
+                                Timer(const Duration(milliseconds: 50), () {
+                                  searchId();
+                                });
                               }
                             },
                             child: CustomText(
@@ -401,11 +430,32 @@ class _VoirPlusPageState extends State<VoirPlusPage> {
                 )));
   }
 
-  searchId() {
+  searchId() async {
+    
     for (var i = 0; i < feedClasse.length; i++) {
       if (value == feedClasse[i].libelleClasse.toString()) {
         setState(() {
           idValue = int.parse(feedClasse[i].idClasse.toString());
+        });
+      }
+
+      if (i == (feedClasse.length - 1)) {
+        anneeID = (saveLastAnneeID!.getInt('lastAnneeID') ?? 0);
+        debugPrint(idValue.toString());
+        debugPrint(anneeID.toString());
+
+        Future<List<ElevesModel>> result =
+            Eleve().listEleve(id1: idValue, id2: anneeID);
+        listEleve = await result;
+
+        Timer(const Duration(milliseconds: 2000), () {
+          loading = true;
+          setState(() {
+            choixClasse = value;
+            longueur = listEleve.length;
+          });
+
+          Navigator.of(context).pop();
         });
       }
     }

@@ -265,46 +265,7 @@ class _SendNotePageState extends State<SendNotePage> {
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
-                    onPressed: () {
-                      String a = note();
-                      setState(() {
-                        textMessage =
-                            '''**L'élève ${eleves.prenomEleve} a eu $a à la note $noteID de ${widget.matiere} au trimestre $trimestreID..''';
-                      });
-
-                      //L'élève "${eleves.nomEleve} ${eleves.prenomEleve}" en classe de "${widget.classe}" a eu $a à la ${noteID.toString()} Note de ${widget.matiere} au Trismetre ${trimestreID.toString()}
-
-                      SmsMessage message = SmsMessage(
-                          eleves.phoneParent, textMessage.toString());
-
-                      debugPrint(textMessage);
-
-                      message.onStateChanged.listen((state) {
-                        if (state == SmsMessageState.Sent) {
-                          debugPrint("SMS is sent!");
-                        } else if (state == SmsMessageState.Delivered) {
-                          debugPrint("SMS is delivered!");
-                        }
-                      });
-
-                      sender.sendSms(message);
-
-                      //sender.sendSms(message);
-                      CoolAlert.show(
-                        context: context,
-                        type: CoolAlertType.success,
-                        text: "Message Envoyé avec Success",
-                        loopAnimation: true,
-                        confirmBtnText: 'OK',
-                        barrierDismissible: false,
-                        confirmBtnColor: tealClaire(),
-                        backgroundColor: teal(),
-                        onConfirmBtnTap: () {
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                        },
-                      );
-                    },
+                    onPressed: () {},
                     child: CustomText("Envoyer",
                         color: Colors.white,
                         tex: TailleText(context).soustitre))
@@ -319,5 +280,65 @@ class _SendNotePageState extends State<SendNotePage> {
     return (charge && feed1.length >= noteID)
         ? feed1[noteID - 1].notesEleve
         : " pas de Note ";
+  }
+
+  confirm() {
+    CoolAlert.show(
+      context: context,
+      type: CoolAlertType.confirm,
+      title: "ENVOI DE MESSAGE",
+      text: "Etes vous sur de vouloir envoyer ce message?",
+      loopAnimation: true,
+      confirmBtnText: 'OUI',
+      cancelBtnText: 'NON',
+      barrierDismissible: false,
+      confirmBtnColor: bleu(),
+      backgroundColor: bleu(),
+      onConfirmBtnTap: () async {
+        Navigator.pop(context);
+
+        String a = note();
+        setState(() {
+          textMessage =
+              '''**L'élève ${eleves.prenomEleve} a eu $a à la note N°$noteID de ${widget.matiere} au trimestre $trimestreID..''';
+        });
+
+        //L'élève "${eleves.nomEleve} ${eleves.prenomEleve}" en classe de "${widget.classe}" a eu $a à la ${noteID.toString()} Note de ${widget.matiere} au Trismetre ${trimestreID.toString()}
+
+        SmsMessage message =
+            SmsMessage(eleves.phoneParent, textMessage.toString());
+
+        debugPrint(textMessage);
+
+        message.onStateChanged.listen((state) {
+          if (state == SmsMessageState.Sent) {
+            debugPrint("SMS is sent!");
+          } else if (state == SmsMessageState.Delivered) {
+            debugPrint("SMS is delivered!");
+          }
+        });
+
+        sender.sendSms(message);
+
+        //sender.sendSms(message);
+        CoolAlert.show(
+          context: context,
+          type: CoolAlertType.success,
+          text: "Message Envoyé avec Success",
+          loopAnimation: true,
+          confirmBtnText: 'OK',
+          barrierDismissible: false,
+          confirmBtnColor: tealClaire(),
+          backgroundColor: teal(),
+          onConfirmBtnTap: () {
+            Navigator.pop(context);
+            Navigator.pop(context);
+          },
+        );
+      },
+      onCancelBtnTap: () {
+        Navigator.pop(context);
+      },
+    );
   }
 }

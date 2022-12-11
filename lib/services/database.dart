@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:sysgesco/models/compte_model.dart';
 import 'package:sysgesco/models/http.dart';
 
 import '../models/config_sms_Model.dart';
@@ -17,6 +18,7 @@ class AppDatabase {
   static Database? _database;
   static const String tableHttp = "http";
   static const String tableConfig = "config";
+  static const String tableCompte = "compte";
 
   Future<Database?> get database async {
     //ignore: unnecessary_null_comparison
@@ -33,7 +35,7 @@ class AppDatabase {
   Future<Database> initDB() async {
     WidgetsFlutterBinding.ensureInitialized();
     return await openDatabase(
-        join(await getDatabasesPath(), 'FinalssDatabase.db'),
+        join(await getDatabasesPath(), 'FinalesDatabase.db'),
         onConfigure: onConfigure, onCreate: (db, version) async {
       // table Categories ..
       await db.execute('''
@@ -50,6 +52,16 @@ class AppDatabase {
             lycee TEXT 
           )
           ''');
+
+      await db.execute('''
+          CREATE TABLE $tableCompte(
+            username TEXT UNIQUE,
+            password TEXT,
+            role INT 
+          )
+          ''');
+
+
     }, version: 1);
   }
 
@@ -159,6 +171,69 @@ class AppDatabase {
 
     if (maps.isNotEmpty) {
       return SmsModel.fromMap(maps.first);
+    }
+    return null;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  void insertCompte(CompteModel element) async {
+    final Database? db = await database;
+
+    await db!.insert(tableCompte, element.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  void updateCompte(CompteModel element) async {
+    final Database? db = await database;
+    await db!.update(tableCompte, element.toMap(),
+        where: 'username = ?', whereArgs: [element.username]);
+  }
+
+  void deleteCompte(String nom) async {
+    final Database? db = await database;
+    await db!.delete(tableCompte, where: 'username = ?', whereArgs: [nom]);
+  }
+
+  Future<List<CompteModel>> listCompte() async {
+    final Database? db = await database;
+    final List<Map<String, dynamic>> maps =
+        await db!.query(tableCompte);
+    List<CompteModel> recipes = List.generate(maps.length, (i) {
+      return CompteModel.fromMap(maps[i]);
+    });
+
+    if (recipes.isEmpty) {
+      for (CompteModel cate in defaultValues) {
+        insertCompte(cate);
+      }
+    }
+    return recipes;
+  }
+
+  List<CompteModel> defaultValues = [
+    CompteModel(username: "admin", password: "admin",role: 0),
+  ];
+  //
+
+  Future<CompteModel?> oneCompte(String username,String password) async {
+    final Database? db = await database;
+    final List<Map<String, dynamic>> maps = await db!.query(tableCompte,
+        columns: ['username', 'password','role'], where: 'username = ? and password = ?', whereArgs: [username,password]);
+
+    if (maps.isNotEmpty) {
+      return CompteModel.fromMap(maps.first);
     }
     return null;
   }

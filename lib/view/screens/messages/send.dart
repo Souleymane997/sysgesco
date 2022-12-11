@@ -238,46 +238,44 @@ class _EnvoiPageState extends State<EnvoiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: 
-          AppBar(
-              title: Text(title[widget.x]),
-              actions: [
-                IconButton(
-                    onPressed: () {
-                      searchClasse(widget.x);
-                    },
-                    icon: const Icon(Icons.filter_center_focus)),
-                Container(
-                  width: 20,
-                ),
-                InkWell(
-                  onTap: () {
-                    debugPrint("show zone search");
-                    setState(() {
-                      showSearch = !showSearch;
-                      changed = "";
-                      editingController.text = "";
-                      boarding = true;
-                    });
-                  },
-                  child: (!showSearch)
-                      ? const Icon(
-                          Icons.search,
-                          color: Colors.white,
-                          size: 25.0,
-                        )
-                      : const Icon(
-                          Icons.cancel,
-                          color: Colors.white,
-                          size: 25.0,
-                        ),
-                ),
-                Container(
-                  width: 20,
-                )
-              ],
-            )
-          ,
+      appBar: AppBar(
+        title: Text(title[widget.x]),
+        actions: [
+          IconButton(
+              onPressed: () {
+                searchClasse(widget.x);
+              },
+              icon: const Icon(Icons.filter_center_focus)),
+          Container(
+            width: 20,
+          ),
+          InkWell(
+            onTap: () {
+              debugPrint("show zone search");
+              setState(() {
+                showSearch = !showSearch;
+                changed = "";
+                editingController.text = "";
+                boarding = true;
+              });
+            },
+            child: (!showSearch)
+                ? const Icon(
+                    Icons.search,
+                    color: Colors.white,
+                    size: 25.0,
+                  )
+                : const Icon(
+                    Icons.cancel,
+                    color: Colors.white,
+                    size: 25.0,
+                  ),
+          ),
+          Container(
+            width: 20,
+          )
+        ],
+      ),
       body: Center(
         child: Column(
           children: [
@@ -418,24 +416,7 @@ class _EnvoiPageState extends State<EnvoiPage> {
                 }
 
                 if (widget.x == 0) {
-                  dialogueNote();
-                  envoiNotes();
-                  Timer(const Duration(milliseconds: 2000), () {
-                    CoolAlert.show(
-                      context: context,
-                      type: CoolAlertType.success,
-                      text: "Message Envoyé avec Success",
-                      loopAnimation: true,
-                      confirmBtnText: 'OK',
-                      barrierDismissible: false,
-                      confirmBtnColor: tealClaire(),
-                      backgroundColor: teal(),
-                      onConfirmBtnTap: () {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                      },
-                    );
-                  });
+                  confirm();
                 }
               },
               elevation: 10.0,
@@ -740,34 +721,8 @@ class _EnvoiPageState extends State<EnvoiPage> {
                                   DInfo.toastError("Faites des Choix svp !!");
                                 } else {
                                   if (i == 1) {
-                                    debugPrint("rrrr");
                                     choixClasse = value;
-
-                                    Timer(const Duration(milliseconds: 2000),
-                                        () {
-                                      envoiEmploi();
-                                    });
-
-                                    //dialogueNote();
-
-                                    Navigator.of(context).pop();
-                                    Timer(const Duration(milliseconds: 2000),
-                                        () {
-                                      CoolAlert.show(
-                                        context: context,
-                                        type: CoolAlertType.success,
-                                        text: "Message Envoyé avec Success",
-                                        loopAnimation: true,
-                                        confirmBtnText: 'OK',
-                                        barrierDismissible: false,
-                                        confirmBtnColor: tealClaire(),
-                                        backgroundColor: teal(),
-                                        onConfirmBtnTap: () {
-                                          Navigator.pop(context);
-                                          Navigator.pop(context);
-                                        },
-                                      );
-                                    });
+                                    confirm2();
                                   } else {
                                     setState(() {
                                       choixClasse = value;
@@ -963,11 +918,10 @@ class _EnvoiPageState extends State<EnvoiPage> {
       //sender.sendSms(SmsMessage(listEleves[i].phoneParent, message));
 
       String a = note();
-      String numero = number(noteID);
 
       textMessage = (a.length <= 2)
-          ? '''** ${verType.lycee} **\n\nL'élève ${listEleves[i].nomEleve.toString().toUpperCase()} ${listEleves[i].prenomEleve.toString().toUpperCase()} en classe de  ${choixClasse.toString().toUpperCase()} a eu  * $a * a la $numero  Note de ${choixMatiere.toString().toUpperCase()} au Trismetre $trimestreID '''
-          : '''** ${verType.lycee} **\n\nL'élève ${listEleves[i].nomEleve.toString().toUpperCase()} ${listEleves[i].prenomEleve.toString().toUpperCase()} en classe de  ${choixClasse.toString().toUpperCase()} n'a pas eu de $numero Note de ${choixMatiere.toString().toUpperCase()} au Trismetre $trimestreID ''';
+          ? '''**L'élève ${listEleves[i].prenomEleve.toString()} a eu $a à la note N°$noteID de ${choixMatiere.toString()} au trimestre $trimestreID.'''
+          : '''**\n\nL'élève ${listEleves[i].prenomEleve.toString()} n'a pas eu de Note N°$noteID en ${choixMatiere.toString().toUpperCase()} au Trismetre $trimestreID.''';
 
       debugPrint(textMessage);
 
@@ -1217,7 +1171,7 @@ class _EnvoiPageState extends State<EnvoiPage> {
                             ),
                           ),
                           onPressed: () {
-                            envoiConvocation();
+                            confirm1();
                           },
                           child: CustomText("Envoyer",
                               color: Colors.white,
@@ -1344,5 +1298,110 @@ class _EnvoiPageState extends State<EnvoiPage> {
                     ),
                   ],
                 )));
+  }
+
+  confirm() {
+    CoolAlert.show(
+      context: context,
+      type: CoolAlertType.confirm,
+      title: "ENVOI DE MESSAGE",
+      text: "Etes vous sur de vouloir envoyer ces messages?",
+      loopAnimation: true,
+      confirmBtnText: 'OUI',
+      cancelBtnText: 'NON',
+      barrierDismissible: false,
+      confirmBtnColor: bleu(),
+      backgroundColor: bleu(),
+      onConfirmBtnTap: () async {
+        Navigator.pop(context);
+        dialogueNote();
+        envoiNotes();
+        Timer(const Duration(milliseconds: 2000), () {
+          CoolAlert.show(
+            context: context,
+            type: CoolAlertType.success,
+            text: "Message Envoyé avec Success",
+            loopAnimation: true,
+            confirmBtnText: 'OK',
+            barrierDismissible: false,
+            confirmBtnColor: tealClaire(),
+            backgroundColor: teal(),
+            onConfirmBtnTap: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+          );
+        });
+      },
+      onCancelBtnTap: () {
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  confirm1() {
+    CoolAlert.show(
+      context: context,
+      type: CoolAlertType.confirm,
+      title: "ENVOI DE MESSAGE",
+      text: "Etes vous sur de vouloir envoyer ces messages?",
+      loopAnimation: true,
+      confirmBtnText: 'OUI',
+      cancelBtnText: 'NON',
+      barrierDismissible: false,
+      confirmBtnColor: bleu(),
+      backgroundColor: bleu(),
+      onConfirmBtnTap: () async {
+        Navigator.pop(context);
+        envoiConvocation();
+      },
+      onCancelBtnTap: () {
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  confirm2() {
+    CoolAlert.show(
+      context: context,
+      type: CoolAlertType.confirm,
+      title: "ENVOI DE MESSAGE",
+      text: "Etes vous sur de vouloir envoyer ces messages?",
+      loopAnimation: true,
+      confirmBtnText: 'OUI',
+      cancelBtnText: 'NON',
+      barrierDismissible: false,
+      confirmBtnColor: bleu(),
+      backgroundColor: bleu(),
+      onConfirmBtnTap: () async {
+        Navigator.pop(context);
+        Timer(const Duration(milliseconds: 2000), () {
+          envoiEmploi();
+        });
+
+        //dialogueNote();
+
+        Navigator.of(context).pop();
+        Timer(const Duration(milliseconds: 2000), () {
+          CoolAlert.show(
+            context: context,
+            type: CoolAlertType.success,
+            text: "Message Envoyé avec Success",
+            loopAnimation: true,
+            confirmBtnText: 'OK',
+            barrierDismissible: false,
+            confirmBtnColor: tealClaire(),
+            backgroundColor: teal(),
+            onConfirmBtnTap: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+          );
+        });
+      },
+      onCancelBtnTap: () {
+        Navigator.pop(context);
+      },
+    );
   }
 }
